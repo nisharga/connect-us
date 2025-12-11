@@ -121,7 +121,7 @@ export default function SignupScreen() {
                 Create Account
               </Text>
               <Text className="text-gray-500 text-center text-sm">
-                Join us and start sharing
+                Connect us and start sharing your moments!
               </Text>
             </View>
 
