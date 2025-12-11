@@ -268,8 +268,11 @@ Create `src/types/navigation.ts`:
 export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
+  Home: undefined;
 };
 ```
+
+**Note:** The `Home` screen will be created in Step 12, but we're adding it to the navigation types here for completeness.
 
 ---
 
@@ -397,7 +400,6 @@ export default function LoginScreen() {
               className="items-center mb-8"
               style={{ marginBottom: isSmallScreen ? 24 : 48 }}
             >
-              <Text className="text-5xl mb-3">📱</Text>
               <Text
                 className="text-2xl font-bold text-gray-900 mb-2"
                 style={{ fontSize: isSmallScreen ? 24 : 30 }}
@@ -633,7 +635,6 @@ export default function SignupScreen() {
               className="items-center mb-8"
               style={{ marginBottom: isSmallScreen ? 24 : 48 }}
             >
-              <Text className="text-5xl mb-3">✨</Text>
               <Text
                 className="text-2xl font-bold text-gray-900 mb-2"
                 style={{ fontSize: isSmallScreen ? 24 : 30 }}
@@ -750,7 +751,52 @@ export default function SignupScreen() {
 
 ---
 
-## Step 12: Create Main App Component
+## Step 12: Create Home Screen
+
+Create `src/screens/HomeScreen.tsx`:
+
+```typescript
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+
+export default function HomeScreen() {
+  async function handleLogout() {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
+      <View className="flex-1 justify-center items-center px-6">
+        <Text className="text-2xl font-bold text-gray-900 text-center mb-8">
+          Welcome! 👋
+        </Text>
+        
+        <TouchableOpacity
+          className="bg-red-500 rounded-xl py-4 px-8"
+          onPress={handleLogout}
+          activeOpacity={0.8}
+        >
+          <Text className="text-white font-bold" style={{ fontSize: 16 }}>
+            Log Out
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+```
+
+
+---
+
+## Step 13: Create Main App Component
 
 Update `App.tsx`:
 
@@ -766,38 +812,39 @@ import "./global.css";
 
 import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen from "./src/screens/SignupScreen";
+import HomeScreen from "./src/screens/HomeScreen";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [initializing, setInitializing] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
-      if (initializing) setInitializing(false);
+      setLoading(false);
     });
     return unsubscribe;
-  }, [initializing]);
+  }, []);
 
-  if (initializing) return null;
+  if (loading) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>
       <AuthContext.Provider value={{ user }}>
         <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerStyle: { backgroundColor: "#ffffff" },
-              headerTintColor: "#000000",
-              headerTitleStyle: { fontWeight: "700", fontSize: 18 },
-              headerShadowVisible: false,
-              headerBorderVisible: false,
-            }}
-          >
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {user ? (
+              <Stack.Screen name="Home" component={HomeScreen} />
+            ) : (
+              <>
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Signup" component={SignupScreen} />
+              </>
+            )}
           </Stack.Navigator>
         </NavigationContainer>
       </AuthContext.Provider>
@@ -806,9 +853,11 @@ export default function App() {
 }
 ```
 
+**Note:** The navigation is protected - authenticated users see the Home screen, while unauthenticated users see Login/Signup screens. After successful login, users are automatically redirected to the Home screen.
+
 ---
 
-## Step 13: Update app.json
+## Step 14: Update app.json
 
 Update `app.json`:
 
@@ -846,7 +895,7 @@ Update `app.json`:
 
 ---
 
-## Step 14: Update .gitignore
+## Step 15: Update .gitignore
 
 Ensure your `.gitignore` includes:
 
@@ -875,7 +924,7 @@ yarn-error.log
 
 ---
 
-## Step 15: Create Assets (Optional)
+## Step 16: Create Assets (Optional)
 
 Add app icons and splash screens to the `assets/` folder:
 - `icon.png` (1024x1024)
@@ -885,7 +934,7 @@ Add app icons and splash screens to the `assets/` folder:
 
 ---
 
-## Step 16: Run the App
+## Step 17: Run the App
 
 1. **Start the development server:**
    ```bash
@@ -900,7 +949,7 @@ Add app icons and splash screens to the `assets/` folder:
 
 ---
 
-## Step 17: Testing
+## Step 18: Testing
 
 1. **Test Signup:**
    - Navigate to Signup screen
@@ -911,13 +960,22 @@ Add app icons and splash screens to the `assets/` folder:
 2. **Test Login:**
    - Enter valid credentials
    - Verify successful login
+   - Verify that you're automatically redirected to the Home screen
    - Check Firebase Authentication console for the new user
 
-3. **Test Error Handling:**
+3. **Test Home Screen:**
+   - Verify you can see the welcome message
+   - Test the logout button - it should sign you out and return to Login screen
+
+4. **Test Error Handling:**
    - Try invalid email format
    - Try weak password (< 6 characters)
    - Try wrong credentials
    - Try existing email on signup
+
+5. **Test Protected Navigation:**
+   - After logging out, verify you cannot access Home screen
+   - After logging in, verify you cannot access Login/Signup screens
 
 ---
 
@@ -941,13 +999,15 @@ Add app icons and splash screens to the `assets/` folder:
 
 ## Next Steps (Optional Enhancements)
 
-1. **Add Protected Routes:**
-   - Create a HomeScreen or Dashboard
-   - Add navigation guards based on authentication state
+1. **Enhance Home Screen:**
+   - Add user profile information
+   - Display user's display name and email
+   - Add more functionality specific to your app
 
 2. **Add Profile Screen:**
    - Display user information
    - Allow profile editing
+   - Add profile picture upload
 
 3. **Add Image Upload:**
    - Use `expo-image-picker` to upload profile pictures
@@ -960,6 +1020,10 @@ Add app icons and splash screens to the `assets/` folder:
    - Google Sign-In
    - Apple Sign-In
 
+6. **Add Bottom Tab Navigation:**
+   - Add tabs for Home, Profile, Settings, etc.
+   - Use `@react-navigation/bottom-tabs`
+
 ---
 
 ## Summary
@@ -967,11 +1031,20 @@ Add app icons and splash screens to the `assets/` folder:
 You've successfully created a React Native Expo app with:
 - ✅ Expo setup with TypeScript
 - ✅ Firebase Authentication (Email/Password)
-- ✅ React Navigation
+- ✅ React Navigation with protected routes
 - ✅ NativeWind (Tailwind CSS)
 - ✅ Login and Signup screens
+- ✅ Home screen (accessible only after login)
+- ✅ Logout functionality
 - ✅ Auth Context for state management
 - ✅ Form validation and error handling
 - ✅ Responsive UI design
+- ✅ Automatic navigation based on authentication state
+
+The app automatically shows:
+- **Home Screen** when user is authenticated (logged in)
+- **Login/Signup Screens** when user is not authenticated
+
+After successful login, users are automatically redirected to the Home screen. The logout button signs users out and returns them to the Login screen.
 
 The app is now ready for further development and customization!
