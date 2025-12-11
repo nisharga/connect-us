@@ -40,7 +40,8 @@ export default function SignupScreen() {
       "auth/email-already-in-use": "This email is already registered",
       "auth/invalid-email": "Invalid email address",
       "auth/weak-password": "Password is too weak. Use at least 6 characters",
-      "auth/network-request-failed": "Network error. Please check your connection",
+      "auth/network-request-failed":
+        "Network error. Please check your connection",
       "auth/too-many-requests": "Too many attempts. Please try again later",
     };
     return errorMessages[errorCode] || "Signup failed. Please try again";
@@ -193,7 +194,7 @@ export default function SignupScreen() {
                 activeOpacity={0.8}
               >
                 <Text className="text-white text-center font-bold text-base">
-                  Sign Up
+                  Sign Up Here
                 </Text>
               </TouchableOpacity>
             </View>
@@ -203,9 +204,7 @@ export default function SignupScreen() {
                 Already have an account?{" "}
               </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                <Text className="text-black font-bold text-base">
-                  Log In
-                </Text>
+                <Text className="text-black font-bold text-base">Log In</Text>
               </TouchableOpacity>
             </View>
           </View>
