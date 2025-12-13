@@ -24,7 +24,8 @@ import { updateProfile } from "firebase/auth";
 import { uploadToCloudinary } from "../uploadImageToCloudinary";
 
 export default function ProfileScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useContext(AuthContext);
 
   const [photoURL, setPhotoURL] = useState<string | null>(null);
@@ -77,32 +78,31 @@ export default function ProfileScreen() {
     await uploadImage(uri);
   }
 
-async function uploadImage(uri: string) {
-  if (!user) return;
+  async function uploadImage(uri: string) {
+    if (!user) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const imageUrl = await uploadToCloudinary(uri);
+    try {
+      const imageUrl = await uploadToCloudinary(uri);
 
-    setPhotoURL(imageUrl);
+      setPhotoURL(imageUrl);
 
-    await updateProfile(auth.currentUser!, {
-      photoURL: imageUrl,
-    });
+      await updateProfile(auth.currentUser!, {
+        photoURL: imageUrl,
+      });
 
-    await setDoc(
-      doc(db, "users", user.uid),
-      { photoURL: imageUrl },
-      { merge: true }
-    );
-  } catch (e) {
-    Alert.alert("Upload failed", "Could not upload image.");
-  } finally {
-    setLoading(false);
+      await setDoc(
+        doc(db, "users", user.uid),
+        { photoURL: imageUrl },
+        { merge: true }
+      );
+    } catch (e) {
+      Alert.alert("Upload failed", "Could not upload image.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
-
 
   async function saveProfile() {
     if (!user) return;
@@ -143,7 +143,9 @@ async function uploadImage(uri: string) {
               onPress={() => navigation.navigate("Home")}
               className="mb-6"
             >
-              <Text className="text-gray-900 font-bold text-base">← Back to Home</Text>
+              <Text className="text-gray-900 font-bold text-base">
+                ← Back to Home
+              </Text>
             </TouchableOpacity>
 
             <View className="items-center mb-8">
@@ -176,7 +178,9 @@ async function uploadImage(uri: string) {
                 {loading ? (
                   <ActivityIndicator color="#111827" />
                 ) : (
-                  <Text className="text-gray-900 font-bold text-base">Change Photo</Text>
+                  <Text className="text-gray-900 font-bold text-base">
+                    Change Photo
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -198,12 +202,17 @@ async function uploadImage(uri: string) {
 
               <View className="flex-row justify-between items-center border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 mb-4">
                 <View>
-                  <Text className="font-semibold text-gray-900">Public Profile</Text>
+                  <Text className="font-semibold text-gray-900">
+                    Public Profile
+                  </Text>
                   <Text className="text-sm text-gray-500">
                     Visible to other users
                   </Text>
                 </View>
-                <Switch value={publicProfile} onValueChange={setPublicProfile} />
+                <Switch
+                  value={publicProfile}
+                  onValueChange={setPublicProfile}
+                />
               </View>
 
               <TouchableOpacity
@@ -215,13 +224,17 @@ async function uploadImage(uri: string) {
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text className="text-white text-center font-bold text-base">Save Profile</Text>
+                  <Text className="text-white text-center font-bold text-base">
+                    Save Profile
+                  </Text>
                 )}
               </TouchableOpacity>
 
               <View className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50">
                 <Text className="text-sm text-gray-500">Account Email</Text>
-                <Text className="font-semibold text-gray-900">{user?.email}</Text>
+                <Text className="font-semibold text-gray-900">
+                  {user?.email}
+                </Text>
               </View>
             </View>
           </View>
