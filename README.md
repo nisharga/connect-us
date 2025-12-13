@@ -6,19 +6,36 @@ A modern React Native mobile application built with Expo, featuring Firebase aut
 
 - ✅ **User Authentication**
   - Email/Password signup and login
-  - Secure authentication with Firebase
-  - Persistent login sessions
+  - Secure authentication with Firebase Auth
+  - Persistent login sessions with AsyncStorage
+  - Protected routes with automatic navigation
 
-- ✅ **Protected Routes**
-  - Automatic navigation based on authentication state
-  - Home screen accessible only after login
-  - Seamless user experience
+- ✅ **User Profile Management**
+  - Profile photo upload with Cloudinary integration
+  - Customizable bio
+  - Public/Private profile toggle
+  - Profile data stored in Firebase Firestore
+  - Real-time profile updates
+
+- ✅ **Settings & Preferences**
+  - Push notifications toggle
+  - Dark mode preference
+  - Email updates configuration
+  - Privacy policy and terms access
+  - Secure logout functionality
+
+- ✅ **Bottom Tab Navigation**
+  - Home screen with welcome message
+  - Profile screen with image upload
+  - Settings screen for preferences
+  - Smooth navigation experience
 
 - ✅ **Modern UI/UX**
   - Clean and minimal design
   - Responsive layouts
   - NativeWind (Tailwind CSS) for styling
   - Form validation and error handling
+  - Consistent styling across screens
 
 - ✅ **TypeScript**
   - Full TypeScript support
@@ -27,12 +44,16 @@ A modern React Native mobile application built with Expo, featuring Firebase aut
 
 ## 🛠️ Technologies Used
 
-- **Framework:** React Native (Expo)
+- **Framework:** React Native (Expo SDK 54)
 - **Language:** TypeScript
 - **Authentication:** Firebase Auth
-- **Navigation:** React Navigation (Native Stack)
+- **Database:** Firebase Firestore
+- **Image Upload:** Cloudinary
+- **Image Picker:** Expo Image Picker
+- **Navigation:** React Navigation (Native Stack + Bottom Tabs)
 - **Styling:** NativeWind (Tailwind CSS)
 - **State Management:** React Context API
+- **Storage:** AsyncStorage
 
 ## 📋 Prerequisites
 
@@ -72,7 +93,14 @@ npm install
    - Scroll to "Your apps" and click the web icon (`</>`)
    - Copy the Firebase configuration object
 
-### 4. Setup Environment Variables
+### 4. Setup Firebase Firestore
+
+1. In Firebase Console, enable **Firestore Database**:
+   - Go to Firestore Database → Create database
+   - Choose "Start in production mode" or "Test mode"
+   - Select your preferred location
+
+### 5. Setup Environment Variables
 
 Create a `.env` file in the root directory:
 
@@ -88,7 +116,17 @@ EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id_here
 
 Replace the placeholder values with your actual Firebase configuration.
 
-### 5. Run the App
+### 6. Setup Cloudinary (for image uploads)
+
+1. Create a free account at [Cloudinary](https://cloudinary.com/)
+2. Get your cloud name from the dashboard
+3. Create an upload preset:
+   - Go to Settings → Upload → Add upload preset
+   - Set preset name to `profile_uploads`
+   - Set signing mode to "Unsigned"
+4. Update the Cloudinary URL in `src/uploadImageToCloudinary.ts` with your cloud name
+
+### 7. Run the App
 
 ```bash
 npm start
@@ -119,22 +157,26 @@ npm run web
 connect-us/
 ├── src/
 │   ├── contexts/
-│   │   └── AuthContext.tsx      # Authentication context
+│   │   └── AuthContext.tsx           # Authentication context
 │   ├── screens/
-│   │   ├── LoginScreen.tsx      # Login screen
-│   │   ├── SignupScreen.tsx     # Signup screen
-│   │   └── HomeScreen.tsx       # Home screen (protected)
+│   │   ├── LoginScreen.tsx           # Login screen
+│   │   ├── SignupScreen.tsx          # Signup screen
+│   │   ├── HomeScreen.tsx            # Home screen (protected)
+│   │   ├── ProfileScreen.tsx         # Profile management screen
+│   │   └── SettingsScreen.tsx        # Settings and preferences screen
 │   ├── types/
-│   │   └── navigation.ts        # Navigation type definitions
-│   └── firebase.ts              # Firebase configuration
-├── assets/                      # Images and icons
-├── App.tsx                      # Main app component
-├── app.json                     # Expo configuration
-├── babel.config.js              # Babel configuration
-├── metro.config.js              # Metro bundler configuration
-├── tailwind.config.js           # Tailwind CSS configuration
-├── global.css                   # Global styles
-└── package.json                 # Dependencies and scripts
+│   │   └── navigation.ts             # Navigation type definitions
+│   ├── firebase.ts                   # Firebase configuration
+│   └── uploadImageToCloudinary.ts    # Cloudinary image upload utility
+├── assets/                           # Images and icons
+├── App.tsx                           # Main app component with navigation
+├── app.json                          # Expo configuration
+├── babel.config.js                   # Babel configuration
+├── metro.config.js                   # Metro bundler configuration
+├── tailwind.config.js                # Tailwind CSS configuration
+├── global.css                        # Global styles
+├── index.ts                          # App entry point
+└── package.json                      # Dependencies and scripts
 ```
 
 ## 🎯 Available Scripts
@@ -149,29 +191,53 @@ connect-us/
 1. **Signup:** Users can create a new account with email, password, and display name
 2. **Login:** Users can sign in with their email and password
 3. **Protected Routes:** 
-   - Authenticated users are automatically directed to the Home screen
+   - Authenticated users are automatically directed to the Home screen with bottom tabs
    - Unauthenticated users see the Login/Signup screens
-4. **Logout:** Users can sign out from the Home screen
+4. **Persistent Sessions:** Login state is preserved using AsyncStorage
+5. **Logout:** Users can sign out from the Settings screen
 
 ## 🎨 Screens
 
 ### Login Screen
 - Email and password input fields
-- Form validation
-- Error handling
+- Form validation and error handling
 - Navigation to Signup screen
+- Clean, minimal design
 
 ### Signup Screen
 - Display name, email, and password fields
-- Form validation
-- Error handling
-- Navigation to Login screen after successful signup
+- Form validation and error handling
+- Automatic login after successful signup
+- Navigation to Login screen
 
-### Home Screen
-- Welcome message
+### Home Screen (Protected)
+- Welcome message with user's display name
 - User information display
-- Logout functionality
-- Protected route (only accessible when authenticated)
+- Bottom tab navigation
+- Clean, modern interface
+
+### Profile Screen (Protected)
+- Profile photo upload and display
+- Image selection via Expo Image Picker
+- Cloudinary integration for image storage
+- Editable bio field (multiline text input)
+- Public/Private profile toggle
+- Save functionality with Firestore integration
+- Display account email
+- Real-time profile updates
+
+### Settings Screen (Protected)
+- Account information display
+- Edit Profile navigation
+- Preferences:
+  - Push notifications toggle
+  - Dark mode toggle
+  - Email updates toggle
+- About section:
+  - Privacy Policy
+  - Terms of Service
+  - App version display
+- Logout functionality with confirmation
 
 ## 🐛 Troubleshooting
 
@@ -200,13 +266,16 @@ For a detailed step-by-step guide on building this app from scratch, see [STEP_B
 
 ## 🔮 Future Enhancements
 
-- [ ] User profile management
-- [ ] Profile picture upload
 - [ ] Password reset functionality
 - [ ] Social authentication (Google, Apple)
-- [ ] Push notifications
-- [ ] Bottom tab navigation
-- [ ] Additional app features
+- [ ] Actual push notifications implementation
+- [ ] Dark mode theme implementation
+- [ ] Email notifications system
+- [ ] User search and discovery
+- [ ] Friend requests and connections
+- [ ] Chat/messaging features
+- [ ] Activity feed
+- [ ] Privacy policy and terms content
 
 ## 📄 License
 
