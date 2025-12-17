@@ -14,6 +14,7 @@ import { RootStackParamList } from "../types/navigation";
 import { AuthContext } from "../contexts/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
+import { BackArrowIcon } from "../components/Icons";
 
 export default function SettingsScreen() {
   const navigation =
@@ -55,10 +56,13 @@ export default function SettingsScreen() {
         <View className="flex-1 px-6 py-10">
           <TouchableOpacity
             onPress={() => navigation.navigate("Home")}
-            className="mb-6"
+            className="mb-6 flex-row items-center"
           >
+            <View className="mr-2">
+              <BackArrowIcon size={20} color="#111827" />
+            </View>
             <Text className="text-gray-900 font-bold text-base">
-              ← Back to Home
+              Back to Home
             </Text>
           </TouchableOpacity>
 

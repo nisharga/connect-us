@@ -21,6 +21,7 @@ import {
 } from "../services/postService";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
+import { CameraIcon } from "../components/Icons";
 
 export default function CreatePostScreen() {
   const navigation =
@@ -141,7 +142,9 @@ export default function CreatePostScreen() {
               />
             ) : (
               <View className="items-center">
-                <Text className="text-6xl text-gray-400 mb-2">📷</Text>
+                <View className="mb-2">
+                  <CameraIcon size={48} color="#9CA3AF" />
+                </View>
                 <Text className="text-gray-500 font-medium">
                   Tap to select photo
                 </Text>

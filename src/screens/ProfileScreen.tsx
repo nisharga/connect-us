@@ -19,6 +19,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { updateProfile } from "firebase/auth";
 import { uploadProfileImageToCloudinary } from "../services/cloudinaryService";
+import { BackArrowIcon } from "../components/Icons";
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -128,10 +129,13 @@ export default function ProfileScreen() {
         <View className="flex-1 px-6 py-10">
           <TouchableOpacity
             onPress={() => navigation.navigate("Home")}
-            className="mb-6"
+            className="mb-6 flex-row items-center"
           >
+            <View className="mr-2">
+              <BackArrowIcon size={20} color="#111827" />
+            </View>
             <Text className="text-gray-900 font-bold text-base">
-              ← Back to Home
+              Back to Home
             </Text>
           </TouchableOpacity>
 
