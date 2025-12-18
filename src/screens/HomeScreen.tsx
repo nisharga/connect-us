@@ -10,26 +10,22 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { signOut } from "firebase/auth";
-import { auth } from "../services/firebase";
+
 import { subscribeToPosts } from "../services/postService";
 import { Post } from "../types/post";
 import PostCard from "../components/PostCard";
-import { HomeIcon, UserIcon, SettingsIcon, GalleryIcon } from "../components/Icons";
+import {
+  HomeIcon,
+  UserIcon,
+  SettingsIcon,
+  GalleryIcon,
+} from "../components/Icons";
 
 export default function HomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-
-  async function handleLogout() {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  }
 
   useEffect(() => {
     const unsubscribe = subscribeToPosts((newPosts) => {
@@ -51,14 +47,9 @@ export default function HomeScreen() {
             onPress={() => navigation.navigate("CreatePost")}
             activeOpacity={0.8}
           >
-            <Text className="text-white font-bold text-sm flex items-center">+ Post</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleLogout}
-            activeOpacity={0.8}
-            className="p-2"
-          >
-            <Text className="text-gray-600 font-semibold">Logout</Text>
+            <Text className="text-white font-bold text-sm flex items-center">
+              + Post
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

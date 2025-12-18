@@ -52,7 +52,14 @@ export function UserIcon({ size = 24, color = "#000" }: IconProps) {
 export function SettingsIcon({ size = 24, color = "#000" }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={2} fill="none" />
+      <Circle
+        cx="12"
+        cy="12"
+        r="3"
+        stroke={color}
+        strokeWidth={2}
+        fill="none"
+      />
       <Path
         d="M12 1V3M12 21V23M23 12H21M3 12H1"
         stroke={color}
@@ -130,6 +137,17 @@ export function BackArrowIcon({ size = 20, color = "#111827" }: IconProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </Svg>
+  );
+}
+
+// Three Dots Menu Icon
+export function ThreeDotsIcon({ size = 24, color = "#6B7280" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="5" r="2" fill={color} />
+      <Circle cx="12" cy="12" r="2" fill={color} />
+      <Circle cx="12" cy="19" r="2" fill={color} />
     </Svg>
   );
 }

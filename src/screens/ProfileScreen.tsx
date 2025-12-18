@@ -7,7 +7,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  ScrollView,
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -15,11 +15,13 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { AuthContext } from "../contexts/AuthContext";
 import { auth, db } from "../services/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { updateProfile } from "firebase/auth";
 import { uploadProfileImageToCloudinary } from "../services/cloudinaryService";
 import { BackArrowIcon } from "../components/Icons";
+import { Post } from "../types/post";
+import PostCard from "../components/PostCard";
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -33,6 +35,8 @@ export default function ProfileScreen() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -54,6 +58,47 @@ export default function ProfileScreen() {
     }
 
     loadProfile();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to user's posts only
+    const postsRef = collection(db, "posts");
+    const q = query(
+      postsRef,
+      where("userId", "==", user.uid)
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const userPosts = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            userId: data.userId,
+            userName: data.userName,
+            userAvatar: data.userAvatar,
+            imageUrl: data.imageUrl,
+            caption: data.caption,
+            createdAt: data.createdAt.toDate(),
+            likes: data.likes || [],
+            comments: data.comments || 0,
+          } as Post;
+        });
+        // Sort by createdAt descending
+        userPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        setPosts(userPosts);
+        setPostsLoading(false);
+      },
+      (error) => {
+        console.error("Error loading user posts:", error);
+        setPostsLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, [user]);
 
   async function pickImage() {
@@ -121,95 +166,118 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <PostCard post={item} />}
+        contentContainerStyle={{ padding: 16 }}
         showsVerticalScrollIndicator={false}
-      >
-        <View className="flex-1 px-6 py-10">
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Home")}
-            className="mb-6 flex-row items-center"
-          >
-            <View className="mr-2">
-              <BackArrowIcon size={20} color="#111827" />
-            </View>
-            <Text className="text-gray-900 font-bold text-base">
-              Back to Home
-            </Text>
-          </TouchableOpacity>
-
-          <View className="items-center mb-8">
-            <Text className="text-3xl font-bold text-gray-900">
-              Your Profile
-            </Text>
-          </View>
-
-          <View className="items-center mb-8">
-            {photoURL ? (
-              <Image
-                source={{ uri: photoURL }}
-                className="w-32 h-32 rounded-full"
-              />
-            ) : (
-              <View className="w-32 h-32 rounded-full bg-gray-50 border border-gray-200 items-center justify-center">
-                <Text className="text-gray-500 text-sm">No Photo</Text>
-              </View>
-            )}
-
-            <TouchableOpacity
-              disabled={loading}
-              onPress={pickImage}
-              className="mt-4 border border-gray-200 bg-gray-50 rounded-xl px-6 py-3"
-              activeOpacity={0.8}
-            >
-              {loading ? (
-                <ActivityIndicator color="#111827" />
-              ) : (
-                <Text className="text-gray-900 font-bold text-base">
-                  Change Photo
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
+        ListHeaderComponent={
           <View className="mb-6">
-            <View className="mb-4">
-              <Text className="text-gray-700 font-semibold mb-2">Bio</Text>
-              <TextInput
-                value={bio}
-                onChangeText={setBio}
-                placeholder="Tell others about yourself"
-                placeholderTextColor="#9ca3af"
-                multiline
-                numberOfLines={4}
-                className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 text-gray-900 text-base"
-                style={{ textAlignVertical: "top", minHeight: 100 }}
-              />
-            </View>
-
             <TouchableOpacity
-              onPress={saveBio}
-              disabled={loading}
-              className="bg-black rounded-xl py-4 mb-4"
-              activeOpacity={0.8}
+              onPress={() => navigation.navigate("Home")}
+              className="mb-6 flex-row items-center"
             >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white text-center font-bold text-base">
-                  Save Bio
-                </Text>
-              )}
+              <View className="mr-2">
+                <BackArrowIcon size={20} color="#111827" />
+              </View>
+              <Text className="text-gray-900 font-bold text-base">
+                Back to Home
+              </Text>
             </TouchableOpacity>
 
-            <View className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50">
-              <Text className="text-sm text-gray-500">Account Email</Text>
-              <Text className="font-semibold text-gray-900">{user?.email}</Text>
+            <View className="items-center mb-8">
+              <Text className="text-3xl font-bold text-gray-900">
+                Your Profile
+              </Text>
+            </View>
+
+            <View className="items-center mb-8">
+              {photoURL ? (
+                <Image
+                  source={{ uri: photoURL }}
+                  className="w-32 h-32 rounded-full"
+                />
+              ) : (
+                <View className="w-32 h-32 rounded-full bg-gray-50 border border-gray-200 items-center justify-center">
+                  <Text className="text-gray-500 text-sm">No Photo</Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                disabled={loading}
+                onPress={pickImage}
+                className="mt-4 border border-gray-200 bg-gray-50 rounded-xl px-6 py-3"
+                activeOpacity={0.8}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#111827" />
+                ) : (
+                  <Text className="text-gray-900 font-bold text-base">
+                    Change Photo
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <View className="mb-6 px-4">
+              <View className="mb-4">
+                <Text className="text-gray-700 font-semibold mb-2">Bio</Text>
+                <TextInput
+                  value={bio}
+                  onChangeText={setBio}
+                  placeholder="Tell others about yourself"
+                  placeholderTextColor="#9ca3af"
+                  multiline
+                  numberOfLines={4}
+                  className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 text-gray-900 text-base"
+                  style={{ textAlignVertical: "top", minHeight: 100 }}
+                />
+              </View>
+
+              <TouchableOpacity
+                onPress={saveBio}
+                disabled={loading}
+                className="bg-black rounded-xl py-4 mb-4"
+                activeOpacity={0.8}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="text-white text-center font-bold text-base">
+                    Save Bio
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <View className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50">
+                <Text className="text-sm text-gray-500">Account Email</Text>
+                <Text className="font-semibold text-gray-900">{user?.email}</Text>
+              </View>
+            </View>
+
+            <View className="px-4 mt-8 mb-4">
+              <Text className="text-2xl font-bold text-gray-900">Your Posts</Text>
             </View>
           </View>
-        </View>
-      </ScrollView>
+        }
+        ListEmptyComponent={
+          !postsLoading && (
+            <View className="flex-1 items-center justify-center py-20 px-4">
+              <Text className="text-gray-500 text-center text-base">
+                No posts yet. Create your first post!
+              </Text>
+            </View>
+          )
+        }
+        ListFooterComponent={
+          postsLoading ? (
+            <View className="py-8 items-center">
+              <ActivityIndicator size="large" color="#000" />
+            </View>
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 }

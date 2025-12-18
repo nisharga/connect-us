@@ -6,6 +6,9 @@ import {
   onSnapshot,
   Timestamp,
   limit,
+  doc,
+  deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Post, CreatePostData } from "../types/post";
@@ -60,4 +63,25 @@ export function subscribeToPosts(
   );
 
   return unsubscribe;
+}
+
+export async function deletePost(postId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, "posts", postId));
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    throw new Error("Failed to delete post");
+  }
+}
+
+export async function updatePost(
+  postId: string,
+  updates: { caption?: string; imageUrl?: string }
+): Promise<void> {
+  try {
+    await updateDoc(doc(db, "posts", postId), updates);
+  } catch (error) {
+    console.error("Error updating post:", error);
+    throw new Error("Failed to update post");
+  }
 }
