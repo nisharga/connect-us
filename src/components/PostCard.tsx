@@ -18,8 +18,21 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Post } from "../types/post";
 import { AuthContext } from "../contexts/AuthContext";
 import { RootStackParamList } from "../types/navigation";
-import { ThreeDotsIcon, HeartIcon, HeartFilledIcon, CommentIcon, SendIcon } from "./Icons";
-import { deletePost, updatePost, likePost, unlikePost, addComment, deleteComment } from "../services/postService";
+import {
+  ThreeDotsIcon,
+  HeartIcon,
+  HeartFilledIcon,
+  CommentIcon,
+  SendIcon,
+} from "./Icons";
+import {
+  deletePost,
+  updatePost,
+  likePost,
+  unlikePost,
+  addComment,
+  deleteComment,
+} from "../services/postService";
 
 interface PostCardProps {
   post: Post;
@@ -99,7 +112,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   const handleLike = async () => {
     if (!user || isLiking) return;
-    
+
     setIsLiking(true);
     try {
       if (isLiked) {
@@ -233,7 +246,11 @@ export default function PostCard({ post }: PostCardProps) {
               ) : (
                 <HeartIcon size={24} color="#111827" />
               )}
-              <Text className={`ml-1 text-sm font-semibold ${isLiked ? 'text-red-500' : 'text-gray-900'}`}>
+              <Text
+                className={`ml-1 text-sm font-semibold ${
+                  isLiked ? "text-red-500" : "text-gray-900"
+                }`}
+              >
                 {post.likes.length}
               </Text>
             </TouchableOpacity>
@@ -265,7 +282,8 @@ export default function PostCard({ post }: PostCardProps) {
               activeOpacity={0.7}
             >
               <Text className="text-gray-500 text-sm">
-                View all {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
+                View all {post.comments.length}{" "}
+                {post.comments.length === 1 ? "comment" : "comments"}
               </Text>
             </TouchableOpacity>
           )}
@@ -348,8 +366,9 @@ export default function PostCard({ post }: PostCardProps) {
           <TouchableOpacity
             onPress={handleSaveEdit}
             disabled={isUpdating}
-            className={`${isUpdating ? "bg-gray-400" : "bg-black"
-              } rounded-lg py-3 mb-3`}
+            className={`${
+              isUpdating ? "bg-gray-400" : "bg-black"
+            } rounded-lg py-3 mb-3`}
           >
             {isUpdating ? (
               <ActivityIndicator color="white" />
@@ -394,11 +413,17 @@ export default function PostCard({ post }: PostCardProps) {
             <FlatList
               data={post.comments}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}
+              contentContainerStyle={{
+                paddingHorizontal: 16,
+                paddingTop: 16,
+                paddingBottom: 8,
+              }}
               ListEmptyComponent={
                 <View className="py-20 items-center">
                   <Text className="text-gray-500">No comments yet</Text>
-                  <Text className="text-gray-400 text-sm mt-1">Be the first to comment!</Text>
+                  <Text className="text-gray-400 text-sm mt-1">
+                    Be the first to comment!
+                  </Text>
                 </View>
               }
               renderItem={({ item }) => (
@@ -420,7 +445,9 @@ export default function PostCard({ post }: PostCardProps) {
                       <View className="bg-gray-100 rounded-2xl px-4 py-2">
                         <TouchableOpacity
                           onPress={() =>
-                            navigation.navigate("UserProfile", { userId: item.userId })
+                            navigation.navigate("UserProfile", {
+                              userId: item.userId,
+                            })
                           }
                         >
                           <Text className="font-semibold text-gray-900 text-sm">
@@ -477,12 +504,15 @@ export default function PostCard({ post }: PostCardProps) {
               <TouchableOpacity
                 onPress={handleAddComment}
                 disabled={!commentText.trim() || isCommenting}
-                className={`p-2 ${!commentText.trim() ? 'opacity-50' : ''}`}
+                className={`p-2 ${!commentText.trim() ? "opacity-50" : ""}`}
               >
                 {isCommenting ? (
                   <ActivityIndicator size="small" color="#000" />
                 ) : (
-                  <SendIcon size={24} color={commentText.trim() ? "#000" : "#9CA3AF"} />
+                  <SendIcon
+                    size={24}
+                    color={commentText.trim() ? "#000" : "#9CA3AF"}
+                  />
                 )}
               </TouchableOpacity>
             </View>

@@ -46,8 +46,10 @@ const sortChatsByTime = (chats: UserChat[]): UserChat[] => {
     if (!a.lastMessageTime && !b.lastMessageTime) return 0;
     if (!a.lastMessageTime) return 1;
     if (!b.lastMessageTime) return -1;
-    const bTime = b.lastMessageTime instanceof Date ? b.lastMessageTime.getTime() : 0;
-    const aTime = a.lastMessageTime instanceof Date ? a.lastMessageTime.getTime() : 0;
+    const bTime =
+      b.lastMessageTime instanceof Date ? b.lastMessageTime.getTime() : 0;
+    const aTime =
+      a.lastMessageTime instanceof Date ? a.lastMessageTime.getTime() : 0;
     return bTime - aTime;
   });
 };
@@ -260,7 +262,9 @@ export const subscribeToUserChats = (
     // Find chats that need enrichment (name == Unknown User)
     const unknowns = chats
       .map((c, idx) => ({ c, idx }))
-      .filter(({ c }) => (c.otherUserName || "") === "Unknown User" && c.otherUserId);
+      .filter(
+        ({ c }) => (c.otherUserName || "") === "Unknown User" && c.otherUserId
+      );
 
     if (unknowns.length === 0) {
       // No enrichment needed — sort and return
@@ -279,10 +283,12 @@ export const subscribeToUserChats = (
           if (userSnap.exists()) {
             const data = userSnap.data() as any;
             // Handle empty or whitespace-only displayName
-            const displayName = data.displayName && data.displayName.trim() !== "" 
-              ? data.displayName 
-              : undefined;
-            resolvedName = displayName || data.userName || data.name || data.email || null;
+            const displayName =
+              data.displayName && data.displayName.trim() !== ""
+                ? data.displayName
+                : undefined;
+            resolvedName =
+              displayName || data.userName || data.name || data.email || null;
             if (resolvedName) {
               chats[idx].otherUserName = resolvedName;
             }
@@ -290,7 +296,10 @@ export const subscribeToUserChats = (
               chats[idx].otherUserPhoto = data.photoURL;
             }
           } else {
-            console.debug("subscribeToUserChats: user doc not found for", c.otherUserId);
+            console.debug(
+              "subscribeToUserChats: user doc not found for",
+              c.otherUserId
+            );
           }
 
           // If still no resolved name, try to get the author's name from their most recent post
@@ -315,10 +324,15 @@ export const subscribeToUserChats = (
             }
           }
         } catch (e) {
-          console.warn("subscribeToUserChats: error fetching user", c.otherUserId, e);
+          console.warn(
+            "subscribeToUserChats: error fetching user",
+            c.otherUserId,
+            e
+          );
         }
       })
-    ).then(() => {
+    )
+      .then(() => {
         chats = sortChatsByTime(chats);
         callback(chats);
       })
@@ -359,12 +373,13 @@ export const getAllUsers = async (
         email?: string;
         photoURL?: string;
       };
-      
+
       // Handle empty or whitespace-only displayName
-      const displayName = data.displayName && data.displayName.trim() !== "" 
-        ? data.displayName 
-        : undefined;
-      
+      const displayName =
+        data.displayName && data.displayName.trim() !== ""
+          ? data.displayName
+          : undefined;
+
       return {
         uid: doc.id,
         displayName: displayName,

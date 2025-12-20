@@ -1,5 +1,5 @@
 import React from "react";
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 
 interface IconProps {
   size?: number;
@@ -39,7 +39,9 @@ export function BackArrowIcon({ size = 20, color = "#111827" }: IconProps) {
 
 // Three Dots Menu Icon
 export function ThreeDotsIcon({ size = 24, color = "#6B7280" }: IconProps) {
-  return <MaterialCommunityIcons name="dots-vertical" size={size} color={color} />;
+  return (
+    <MaterialCommunityIcons name="dots-vertical" size={size} color={color} />
+  );
 }
 
 // Chat/Message Icon

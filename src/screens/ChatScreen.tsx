@@ -12,8 +12,6 @@ import {
   View, // Container component
   Text, // Text display component
   TouchableOpacity, // Touchable button
-  Image, // Image display component
-  ActivityIndicator, // Loading spinner
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
@@ -22,31 +20,11 @@ import { subscribeToMessages, sendMessage } from "../services/chatService";
 import { Message } from "../types/chat";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-// Back arrow removed; native header will be used
 type Props = NativeStackScreenProps<RootStackParamList, "Chat">;
 
-// Helper function to get a user's display name
-const getUserDisplayName = (userData: {
-  displayName?: string;
-  email?: string;
-}): string => {
-  // If displayName exists and is not empty, use it
-  if (userData.displayName && userData.displayName.trim() !== "") {
-    return userData.displayName;
-  }
-  // If email exists, use it (even if it's the only available info)
-  if (userData.email) {
-    return userData.email;
-  }
-  // Fallback to Unknown User
-  return "Unknown User";
-};
-
 const ChatScreen = ({ navigation, route }: Props) => {
-
   // Get route parameters passed from ChatListScreen
-  const { chatRoomId, otherUserId, otherUserName, otherUserPhoto } =
-    route.params;
+  const { chatRoomId, otherUserName } = route.params;
 
   // Get the current user from AuthContext
   const { user } = useContext(AuthContext);
@@ -106,13 +84,10 @@ const ChatScreen = ({ navigation, route }: Props) => {
   }
 
   useLayoutEffect(() => {
-    navigation.setOptions({ 
+    navigation.setOptions({
       title: otherUserName,
       headerLeft: () => (
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          className="px-4"
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} className="px-4">
           <Text className="text-black font-bold">Back</Text>
         </TouchableOpacity>
       ),
@@ -120,7 +95,10 @@ const ChatScreen = ({ navigation, route }: Props) => {
   }, [navigation, otherUserName]);
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-4 pb-8" edges={["top", "bottom"]}>
+    <SafeAreaView
+      className="flex-1 bg-white pt-4 pb-8"
+      edges={["top", "bottom"]}
+    >
       <View className="flex-1 bg-white px-2">
         {/* Native header used */}
 

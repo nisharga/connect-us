@@ -1,6 +1,11 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { HomeIcon, UserIcon, SettingsIcon, ChatIcon } from "../components/Icons";
+import {
+  HomeIcon,
+  UserIcon,
+  SettingsIcon,
+  ChatIcon,
+} from "../components/Icons";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import ChatListScreen from "../screens/ChatListScreen";

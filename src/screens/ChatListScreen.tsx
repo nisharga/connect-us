@@ -18,8 +18,6 @@ import {
   getOrCreateChatRoom,
 } from "../services/chatService";
 import { UserChat } from "../types/chat";
-import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
-import { RootStackParamList } from "../types/navigation";
 
 // Helper function to get a user's display name
 const getUserDisplayName = (userData: {
