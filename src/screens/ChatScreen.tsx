@@ -47,7 +47,7 @@ const ChatScreen = ({ navigation, route }: Props) => {
   // Function to handle sending a new message
   // This is called when user taps the send button in GiftedChat
   const onSend = useCallback(
-    (newMessages: IMessage[] = []) => {
+    async (newMessages: IMessage[] = []) => {
       // If no user is logged in, don't send
       if (!user) return;
 
@@ -61,13 +61,17 @@ const ChatScreen = ({ navigation, route }: Props) => {
         user: {
           _id: user.uid, // Current user's ID
           name: user.displayName || user.email || "You", // User's name
-          avatar: user.photoURL || undefined, // User's profile picture
+          ...(user.photoURL && { avatar: user.photoURL }), // User's profile picture (only if it exists)
         },
         chatRoomId: chatRoomId, // Which chat room this belongs to
       };
 
       // Send the message to Firebase
-      sendMessage(chatRoomId, messageToSend);
+      try {
+        await sendMessage(chatRoomId, messageToSend);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     },
     [chatRoomId, user]
   );
@@ -111,22 +115,7 @@ const ChatScreen = ({ navigation, route }: Props) => {
           user={{
             _id: user.uid, // Current user's ID (GiftedChat uses this to show messages on right/left)
             name: user.displayName || user.email || "You", // Current user's name
-            avatar: user.photoURL || undefined, // Current user's profile picture
-          }}
-          // Customize the send button text
-          renderSend={(props) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  if (props.text && props.onSend) {
-                    props.onSend({ text: props.text.trim() }, true);
-                  }
-                }}
-                className="justify-center items-center px-4 mb-4"
-              >
-                <Text className="text-black font-bold text-lg">Send</Text>
-              </TouchableOpacity>
-            );
+            ...(user.photoURL && { avatar: user.photoURL }), // Current user's profile picture (only if it exists)
           }}
           // Customize message bubble colors
           renderBubble={(props) => {

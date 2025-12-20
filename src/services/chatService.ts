@@ -142,26 +142,31 @@ export const sendMessage = async (
   chatRoomId: string,
   message: Omit<Message, "_id"> // Message without _id (Firestore will generate it)
 ): Promise<void> => {
-  // Reference to the messages collection in Firestore
-  const messagesRef = collection(db, "messages");
+  try {
+    // Reference to the messages collection in Firestore
+    const messagesRef = collection(db, "messages");
 
-  // Create the message object to store in Firestore
-  const messageData = {
-    text: message.text, // The message text
-    createdAt: serverTimestamp(), // Server timestamp
-    user: message.user, // User who sent the message
-    chatRoomId: chatRoomId, // Which chat room this belongs to
-  };
+    // Create the message object to store in Firestore
+    const messageData = {
+      text: message.text, // The message text
+      createdAt: serverTimestamp(), // Server timestamp
+      user: message.user, // User who sent the message
+      chatRoomId: chatRoomId, // Which chat room this belongs to
+    };
 
-  // Add the message to Firestore
-  await addDoc(messagesRef, messageData);
+    // Add the message to Firestore
+    await addDoc(messagesRef, messageData);
 
-  // Update the chat room with the latest message info
-  const chatRoomRef = doc(db, "chatRooms", chatRoomId);
-  await updateDoc(chatRoomRef, {
-    lastMessage: message.text, // Store the last message text
-    lastMessageTime: serverTimestamp(), // Store when it was sent
-  });
+    // Update the chat room with the latest message info
+    const chatRoomRef = doc(db, "chatRooms", chatRoomId);
+    await updateDoc(chatRoomRef, {
+      lastMessage: message.text, // Store the last message text
+      lastMessageTime: serverTimestamp(), // Store when it was sent
+    });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    throw error; // Re-throw the error so it can be handled by the caller
+  }
 };
 
 // This function listens to messages in a chat room in real-time
