@@ -1,7 +1,13 @@
 // This screen handles the one-on-one chat interface using GiftedChat
 // It shows message history and allows sending new messages in real-time
 
-import React, { useState, useCallback, useEffect, useContext, useLayoutEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useContext,
+  useLayoutEffect,
+} from "react";
 import {
   View, // Container component
   Text, // Text display component
@@ -37,6 +43,7 @@ const getUserDisplayName = (userData: {
 };
 
 const ChatScreen = ({ navigation, route }: Props) => {
+
   // Get route parameters passed from ChatListScreen
   const { chatRoomId, otherUserId, otherUserName, otherUserPhoto } =
     route.params;
@@ -99,12 +106,22 @@ const ChatScreen = ({ navigation, route }: Props) => {
   }
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: otherUserName });
+    navigation.setOptions({ 
+      title: otherUserName,
+      headerLeft: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          className="px-4"
+        >
+          <Text className="text-black font-bold">Back</Text>
+        </TouchableOpacity>
+      ),
+    });
   }, [navigation, otherUserName]);
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
-      <View className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white pt-4 pb-8" edges={["top", "bottom"]}>
+      <View className="flex-1 bg-white px-2">
         {/* Native header used */}
 
         {/* GiftedChat Component */}
@@ -127,7 +144,7 @@ const ChatScreen = ({ navigation, route }: Props) => {
                     props.onSend({ text: props.text.trim() }, true);
                   }
                 }}
-                className="justify-center items-center px-4 mb-2"
+                className="justify-center items-center px-4 mb-4"
               >
                 <Text className="text-black font-bold text-lg">Send</Text>
               </TouchableOpacity>
@@ -139,16 +156,18 @@ const ChatScreen = ({ navigation, route }: Props) => {
               <View>
                 {props.currentMessage && (
                   <View
-                    className={`p-3 rounded-2xl mx-2 my-1 max-w-xs ${props.currentMessage.user._id === user.uid
-                      ? "bg-black self-end" // Current user's messages on right, primary black
-                      : "bg-gray-300 self-start" // Other user's messages on left, gray
-                      }`}
+                    className={`p-3 rounded-2xl mx-2 my-1 max-w-xs ${
+                      props.currentMessage.user._id === user.uid
+                        ? "bg-black self-end" // Current user's messages on right, primary black
+                        : "bg-gray-300 self-start" // Other user's messages on left, gray
+                    }`}
                   >
                     <Text
-                      className={`${props.currentMessage.user._id === user.uid
-                        ? "text-white" // White text for current user
-                        : "text-gray-800" // Dark text for other user
-                        }`}
+                      className={`${
+                        props.currentMessage.user._id === user.uid
+                          ? "text-white" // White text for current user
+                          : "text-gray-800" // Dark text for other user
+                      }`}
                     >
                       {props.currentMessage.text}
                     </Text>

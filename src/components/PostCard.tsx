@@ -381,9 +381,9 @@ export default function PostCard({ post }: PostCardProps) {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1 bg-white"
         >
-          <View className="flex-1 pt-12">
+          <View className="flex-1 pt-16 pb-8">
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 pb-4 border-b border-gray-200">
+            <View className="flex-row items-center justify-between px-4 pb-6 pt-2 border-b border-gray-200">
               <Text className="text-xl font-bold">Comments</Text>
               <TouchableOpacity onPress={() => setCommentsModalVisible(false)}>
                 <Text className="text-gray-500 text-lg">✕</Text>
@@ -394,7 +394,7 @@ export default function PostCard({ post }: PostCardProps) {
             <FlatList
               data={post.comments}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ padding: 16 }}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}
               ListEmptyComponent={
                 <View className="py-20 items-center">
                   <Text className="text-gray-500">No comments yet</Text>
@@ -453,7 +453,7 @@ export default function PostCard({ post }: PostCardProps) {
             />
 
             {/* Add Comment Input */}
-            <View className="border-t border-gray-200 px-4 py-3 flex-row items-center gap-3">
+            <View className="border-t border-gray-200 px-4 py-4 flex-row items-center gap-3">
               <View className="w-8 h-8 rounded-full bg-gray-300 items-center justify-center">
                 {user?.photoURL ? (
                   <Image
@@ -471,7 +471,7 @@ export default function PostCard({ post }: PostCardProps) {
                 onChangeText={setCommentText}
                 placeholder="Add a comment..."
                 placeholderTextColor="#9CA3AF"
-                className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-gray-900"
+                className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-gray-900"
                 editable={!isCommenting}
               />
               <TouchableOpacity

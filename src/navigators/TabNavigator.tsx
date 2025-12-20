@@ -18,13 +18,13 @@ export default function TabNavigator() {
           backgroundColor: "#fff",
           borderTopWidth: 1,
           borderTopColor: "#E5E7EB",
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingBottom: 10,
+          paddingTop: 10,
+          height: 70,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
+          fontSize: 14,
+          fontWeight: "600",
         },
       }}
     >
