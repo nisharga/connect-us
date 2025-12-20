@@ -68,7 +68,7 @@ export default function SignupScreen() {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("displayName", "==", displayName.trim()));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         setDisplayNameError("This username is already taken. Please choose another one.");
         return;
@@ -115,10 +115,10 @@ export default function SignupScreen() {
       });
 
       // Update the user's display name in Firebase Auth
-      await updateProfile(cred.user, { 
-        displayName: finalDisplayName 
+      await updateProfile(cred.user, {
+        displayName: finalDisplayName
       });
-      
+
       // Navigation happens automatically via auth state change in App.tsx
     } catch (err: any) {
       const errorCode = err?.code || "";
@@ -162,9 +162,8 @@ export default function SignupScreen() {
             <View className="mb-6">
               <View>
                 <TextInput
-                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${
-                    displayNameError ? "border-red-500" : "border-gray-200"
-                  }`}
+                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${displayNameError ? "border-red-500" : "border-gray-200"
+                    }`}
                   placeholder="Display Name"
                   placeholderTextColor="#9ca3af"
                   value={displayName}
@@ -182,9 +181,8 @@ export default function SignupScreen() {
 
               <View>
                 <TextInput
-                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${
-                    emailError ? "border-red-500" : "border-gray-200"
-                  }`}
+                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${emailError ? "border-red-500" : "border-gray-200"
+                    }`}
                   placeholder="Email"
                   placeholderTextColor="#9ca3af"
                   value={email}
@@ -205,9 +203,8 @@ export default function SignupScreen() {
 
               <View>
                 <TextInput
-                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${
-                    passwordError ? "border-red-500" : "border-gray-200"
-                  }`}
+                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${passwordError ? "border-red-500" : "border-gray-200"
+                    }`}
                   placeholder="Password"
                   placeholderTextColor="#9ca3af"
                   value={password}

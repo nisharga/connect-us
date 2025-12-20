@@ -74,15 +74,15 @@ export default function LoginScreen() {
       // This is helpful for users who signed up before the chat feature was added
       const userDocRef = doc(db, "users", cred.user.uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (!userDoc.exists()) {
         // User data doesn't exist, create it
-        const displayName = 
-          cred.user.displayName || 
-          cred.user.email?.split("@")[0] || 
-          cred.user.email || 
+        const displayName =
+          cred.user.displayName ||
+          cred.user.email?.split("@")[0] ||
+          cred.user.email ||
           "User";
-        
+
         await setDoc(userDocRef, {
           displayName: displayName,
           email: cred.user.email || "",
@@ -133,9 +133,8 @@ export default function LoginScreen() {
             <View className="mb-6">
               <View>
                 <TextInput
-                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${
-                    emailError ? "border-red-500" : "border-gray-200"
-                  }`}
+                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${emailError ? "border-red-500" : "border-gray-200"
+                    }`}
                   placeholder="Email"
                   placeholderTextColor="#9ca3af"
                   value={email}
@@ -156,9 +155,8 @@ export default function LoginScreen() {
 
               <View>
                 <TextInput
-                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${
-                    passwordError ? "border-red-500" : "border-gray-200"
-                  }`}
+                  className={`border rounded-xl px-4 py-3.5 mb-1 bg-gray-50 text-gray-900 text-base ${passwordError ? "border-red-500" : "border-gray-200"
+                    }`}
                   placeholder="Password"
                   placeholderTextColor="#9ca3af"
                   value={password}

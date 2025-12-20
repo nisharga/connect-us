@@ -4,13 +4,15 @@
 export type RootStackParamList = {
   Login: undefined; // Login screen doesn't need any params
   Signup: undefined; // Signup screen doesn't need any params
+  Main: undefined; // Main tab navigator screen
   Home: undefined; // Home screen doesn't need any params
   Profile: undefined; // Profile screen doesn't need any params
+  Settings: undefined; // Settings screen doesn't need any params
+  EditProfile: undefined; // Edit profile screen doesn't need any params
   UserProfile: {
     // Public user profile screen
     userId: string; // The ID of the user whose profile to view
   };
-  Settings: undefined; // Settings screen doesn't need any params
   CreatePost: undefined; // CreatePost screen doesn't need any params
   ChatList: undefined; // ChatList screen doesn't need any params
   Chat: {

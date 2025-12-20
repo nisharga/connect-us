@@ -1,7 +1,7 @@
 // This screen displays a list of all chat conversations for the current user
 // It shows recent chats sorted by the most recent message
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useLayoutEffect } from "react";
 import {
   View, // Container component
   Text, // Text display component
@@ -18,10 +18,8 @@ import {
   getOrCreateChatRoom,
 } from "../services/chatService";
 import { UserChat } from "../types/chat";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { RootStackParamList } from "../types/navigation";
-import { BackArrowIcon } from "../components/Icons";// Define the props type for this screen
-type Props = NativeStackScreenProps<RootStackParamList, "ChatList">;
 
 // Helper function to get a user's display name
 const getUserDisplayName = (userData: {
@@ -40,7 +38,7 @@ const getUserDisplayName = (userData: {
   return "Unknown User";
 };
 
-const ChatListScreen = ({ navigation }: Props) => {
+const ChatListScreen = ({ navigation }: any) => {
   // Get the current user from AuthContext
   const { user } = useContext(AuthContext);
 
@@ -88,6 +86,23 @@ const ChatListScreen = ({ navigation }: Props) => {
       setAllUsers(users);
     });
   }, [user]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "Chats",
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => setShowUserList((s) => !s)}
+          className="bg-black rounded-full px-4 py-2"
+          activeOpacity={0.8}
+        >
+          <Text className="text-white font-semibold">
+            {showUserList ? "Hide Users" : "New Chat"}
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, showUserList]);
 
   // Function to handle when a chat is tapped
   const handleChatPress = (chat: UserChat) => {
@@ -240,31 +255,7 @@ const ChatListScreen = ({ navigation }: Props) => {
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top", "bottom"]}>
       <View className="flex-1 bg-gray-50">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Home")}
-          className="mb-2 flex-row items-center pt-12 px-4"
-        >
-          <View className="mr-2">
-            <BackArrowIcon size={20} color="#111827" />
-          </View>
-          <Text className="text-gray-900 font-bold text-base">Back to Home</Text>
-        </TouchableOpacity>
-
-        {/* Header */}
-        <View className="bg-white px-4 py-3 border-b border-gray-200">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-2xl font-bold text-gray-900">Chats</Text>
-            <TouchableOpacity
-              onPress={() => setShowUserList(!showUserList)}
-              className="bg-black rounded-full px-4 py-2"
-              activeOpacity={0.8}
-            >
-              <Text className="text-white font-semibold">
-                {showUserList ? "Hide Users" : "New Chat"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Native header used */}
         {/* Show user list or chat list based on state */}
         {showUserList ? (
           // User list for starting new chats

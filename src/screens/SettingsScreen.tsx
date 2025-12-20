@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { RootStackParamList } from "../types/navigation";
 import { AuthContext } from "../contexts/AuthContext";
 import { signOut } from "firebase/auth";
@@ -18,7 +20,10 @@ import { BackArrowIcon } from "../components/Icons";
 
 export default function SettingsScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<CompositeNavigationProp<
+      BottomTabNavigationProp<RootStackParamList>,
+      NativeStackNavigationProp<RootStackParamList>
+    >>();
   const { user } = useContext(AuthContext);
 
   // Settings state
@@ -54,17 +59,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-1 px-6 py-10">
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Home")}
-            className="mb-6 flex-row items-center"
-          >
-            <View className="mr-2">
-              <BackArrowIcon size={20} color="#111827" />
-            </View>
-            <Text className="text-gray-900 font-bold text-base">
-              Back to Home
-            </Text>
-          </TouchableOpacity>
+          {/* Native header used */}
 
           <View className="items-center mb-8">
             <Text className="text-3xl font-bold text-gray-900 mb-2">
@@ -88,7 +83,7 @@ export default function SettingsScreen() {
 
             <TouchableOpacity
               className="border border-gray-200 bg-gray-50 rounded-xl py-4 mb-3"
-              onPress={() => navigation.navigate("Profile")}
+              onPress={() => navigation.navigate("EditProfile")}
               activeOpacity={0.8}
             >
               <Text className="text-gray-900 text-center font-bold text-base">

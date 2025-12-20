@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useLayoutEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { RootStackParamList } from "../types/navigation";
 import * as ImagePicker from "expo-image-picker";
 import { AuthContext } from "../contexts/AuthContext";
@@ -25,7 +27,10 @@ import { CameraIcon } from "../components/Icons";
 
 export default function CreatePostScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<CompositeNavigationProp<
+      BottomTabNavigationProp<RootStackParamList>,
+      NativeStackNavigationProp<RootStackParamList>
+    >>();
   const { user } = useContext(AuthContext);
   const [image, setImage] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
@@ -88,7 +93,7 @@ export default function CreatePostScreen() {
       Alert.alert("Success", "Post created successfully!", [
         {
           text: "OK",
-          onPress: () => navigation.navigate("Home"),
+          onPress: () => navigation.navigate("Main"),
         },
       ]);
 
@@ -103,27 +108,24 @@ export default function CreatePostScreen() {
     }
   };
 
-  return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text className="text-base font-semibold text-gray-900">Cancel</Text>
-        </TouchableOpacity>
-        <Text className="text-lg font-bold text-gray-900">Create Post</Text>
-        <TouchableOpacity
-          onPress={handleCreatePost}
-          disabled={loading || !image}
-        >
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "Create Post",
+      headerRight: () => (
+        <TouchableOpacity onPress={handleCreatePost} disabled={loading || !image}>
           <Text
-            className={`text-base font-semibold ${
-              loading || !image ? "text-gray-400" : "text-blue-600"
-            }`}
+            className={`text-base font-semibold ${loading || !image ? "text-gray-400" : "text-blue-600"}`}
           >
             {loading ? "Posting..." : "Post"}
           </Text>
         </TouchableOpacity>
-      </View>
+      ),
+    });
+  }, [navigation, loading, image, caption]);
+
+  return (
+    <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
+      {/* Native header used */}
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="p-4">

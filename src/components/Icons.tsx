@@ -46,3 +46,23 @@ export function ThreeDotsIcon({ size = 24, color = "#6B7280" }: IconProps) {
 export function ChatIcon({ size = 24, color = "#000" }: IconProps) {
   return <Feather name="message-circle" size={size} color={color} />;
 }
+
+// Heart Icon (for likes)
+export function HeartIcon({ size = 24, color = "#000" }: IconProps) {
+  return <Feather name="heart" size={size} color={color} />;
+}
+
+// Heart Filled Icon (for liked posts)
+export function HeartFilledIcon({ size = 24, color = "#EF4444" }: IconProps) {
+  return <MaterialCommunityIcons name="heart" size={size} color={color} />;
+}
+
+// Comment Icon
+export function CommentIcon({ size = 24, color = "#000" }: IconProps) {
+  return <Feather name="message-circle" size={size} color={color} />;
+}
+
+// Send Icon (for posting comments)
+export function SendIcon({ size = 24, color = "#000" }: IconProps) {
+  return <Feather name="send" size={size} color={color} />;
+}

@@ -8,13 +8,18 @@ import {
   Modal,
   TextInput,
   ActivityIndicator,
+  NativeSyntheticEvent,
+  TextLayoutEventData,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Post } from "../types/post";
 import { AuthContext } from "../contexts/AuthContext";
 import { RootStackParamList } from "../types/navigation";
-import { ThreeDotsIcon } from "./Icons";
-import { deletePost, updatePost } from "../services/postService";
+import { ThreeDotsIcon, HeartIcon, HeartFilledIcon, CommentIcon, SendIcon } from "./Icons";
+import { deletePost, updatePost, likePost, unlikePost, addComment, deleteComment } from "../services/postService";
 
 interface PostCardProps {
   post: Post;
@@ -25,9 +30,16 @@ export default function PostCard({ post }: PostCardProps) {
   const { user } = useContext(AuthContext);
   const [menuVisible, setMenuVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [editCaption, setEditCaption] = useState(post.caption);
+  const [commentText, setCommentText] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [isCommenting, setIsCommenting] = useState(false);
   const isOwnPost = user?.uid === post.userId;
+  const [isTextExpanded, setIsTextExpanded] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
+  const isLiked = user ? post.likes.includes(user.uid) : false;
 
   const handleDelete = () => {
     Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
@@ -85,6 +97,50 @@ export default function PostCard({ post }: PostCardProps) {
     return date.toLocaleDateString();
   };
 
+  const handleLike = async () => {
+    if (!user || isLiking) return;
+    
+    setIsLiking(true);
+    try {
+      if (isLiked) {
+        await unlikePost(post.id, user.uid);
+      } else {
+        await likePost(post.id, user.uid);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to update like");
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!user || !commentText.trim() || isCommenting) return;
+
+    setIsCommenting(true);
+    try {
+      await addComment(post.id, {
+        userId: user.uid,
+        userName: user.displayName || user.email?.split("@")[0] || "User",
+        userAvatar: user.photoURL || undefined,
+        text: commentText.trim(),
+      });
+      setCommentText("");
+    } catch (error) {
+      Alert.alert("Error", "Failed to add comment");
+    } finally {
+      setIsCommenting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment(post.id, commentId);
+    } catch (error) {
+      Alert.alert("Error", "Failed to delete comment");
+    }
+  };
+
   return (
     <>
       <View className="bg-white mb-4 rounded-lg overflow-hidden border border-gray-200">
@@ -128,6 +184,33 @@ export default function PostCard({ post }: PostCardProps) {
           )}
         </View>
 
+        {/* Caption above image */}
+        {post.caption ? (
+          <View className="px-4 py-3">
+            <Text
+              className="text-gray-800 text-base"
+              onTextLayout={(e: NativeSyntheticEvent<TextLayoutEventData>) => {
+                if (e.nativeEvent.lines.length > 3 && !showReadMore) {
+                  setShowReadMore(true);
+                }
+              }}
+              numberOfLines={isTextExpanded ? undefined : 3}
+            >
+              {post.caption}
+            </Text>
+            {showReadMore ? (
+              <TouchableOpacity
+                onPress={() => setIsTextExpanded((s) => !s)}
+                activeOpacity={0.7}
+              >
+                <Text className="text-sm text-gray-500 mt-1">
+                  {isTextExpanded ? "Read less" : "Read more"}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : null}
+
         {/* Post Image */}
         <Image
           source={{ uri: post.imageUrl }}
@@ -135,22 +218,57 @@ export default function PostCard({ post }: PostCardProps) {
           resizeMode="cover"
         />
 
-        {/* Post Content */}
+        {/* Post Actions */}
         <View className="px-4 py-3">
-          {post.caption && (
-            <Text className="text-gray-800 mb-2">
-              <Text className="font-bold">{post.userName} </Text>
-              {post.caption}
-            </Text>
-          )}
-          <View className="flex-row items-center pt-2">
-            <Text className="text-gray-500 text-xs mr-4">
+          <View className="flex-row items-center gap-4 mb-2">
+            {/* Like Button */}
+            <TouchableOpacity
+              onPress={handleLike}
+              disabled={isLiking}
+              className="flex-row items-center"
+              activeOpacity={0.7}
+            >
+              {isLiked ? (
+                <HeartFilledIcon size={24} color="#EF4444" />
+              ) : (
+                <HeartIcon size={24} color="#111827" />
+              )}
+              <Text className={`ml-1 text-sm font-semibold ${isLiked ? 'text-red-500' : 'text-gray-900'}`}>
+                {post.likes.length}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Comment Button */}
+            <TouchableOpacity
+              onPress={() => setCommentsModalVisible(true)}
+              className="flex-row items-center"
+              activeOpacity={0.7}
+            >
+              <CommentIcon size={24} color="#111827" />
+              <Text className="ml-1 text-sm font-semibold text-gray-900">
+                {post.comments.length}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Likes Text */}
+          {post.likes.length > 0 && (
+            <Text className="text-gray-900 font-semibold text-sm mb-1">
               {post.likes.length} {post.likes.length === 1 ? "like" : "likes"}
             </Text>
-            <Text className="text-gray-500 text-xs">
-              {post.comments} {post.comments === 1 ? "comment" : "comments"}
-            </Text>
-          </View>
+          )}
+
+          {/* Preview first comment */}
+          {post.comments.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setCommentsModalVisible(true)}
+              activeOpacity={0.7}
+            >
+              <Text className="text-gray-500 text-sm">
+                View all {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -230,9 +348,8 @@ export default function PostCard({ post }: PostCardProps) {
           <TouchableOpacity
             onPress={handleSaveEdit}
             disabled={isUpdating}
-            className={`${
-              isUpdating ? "bg-gray-400" : "bg-black"
-            } rounded-lg py-3 mb-3`}
+            className={`${isUpdating ? "bg-gray-400" : "bg-black"
+              } rounded-lg py-3 mb-3`}
           >
             {isUpdating ? (
               <ActivityIndicator color="white" />
@@ -252,6 +369,125 @@ export default function PostCard({ post }: PostCardProps) {
             </Text>
           </TouchableOpacity>
         </View>
+      </Modal>
+
+      {/* Comments Modal */}
+      <Modal
+        visible={commentsModalVisible}
+        animationType="slide"
+        onRequestClose={() => setCommentsModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1 bg-white"
+        >
+          <View className="flex-1 pt-12">
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-4 pb-4 border-b border-gray-200">
+              <Text className="text-xl font-bold">Comments</Text>
+              <TouchableOpacity onPress={() => setCommentsModalVisible(false)}>
+                <Text className="text-gray-500 text-lg">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Comments List */}
+            <FlatList
+              data={post.comments}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: 16 }}
+              ListEmptyComponent={
+                <View className="py-20 items-center">
+                  <Text className="text-gray-500">No comments yet</Text>
+                  <Text className="text-gray-400 text-sm mt-1">Be the first to comment!</Text>
+                </View>
+              }
+              renderItem={({ item }) => (
+                <View className="mb-4">
+                  <View className="flex-row">
+                    <View className="w-8 h-8 rounded-full bg-gray-300 mr-3 items-center justify-center">
+                      {item.userAvatar ? (
+                        <Image
+                          source={{ uri: item.userAvatar }}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      ) : (
+                        <Text className="text-white font-bold text-xs">
+                          {item.userName.charAt(0).toUpperCase()}
+                        </Text>
+                      )}
+                    </View>
+                    <View className="flex-1">
+                      <View className="bg-gray-100 rounded-2xl px-4 py-2">
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate("UserProfile", { userId: item.userId })
+                          }
+                        >
+                          <Text className="font-semibold text-gray-900 text-sm">
+                            {item.userName}
+                          </Text>
+                        </TouchableOpacity>
+                        <Text className="text-gray-800 text-base mt-1">
+                          {item.text}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center mt-1 ml-4">
+                        <Text className="text-gray-500 text-xs">
+                          {formatDate(item.createdAt)}
+                        </Text>
+                        {user?.uid === item.userId && (
+                          <TouchableOpacity
+                            onPress={() => handleDeleteComment(item.id)}
+                            className="ml-4"
+                          >
+                            <Text className="text-red-500 text-xs font-semibold">
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              )}
+            />
+
+            {/* Add Comment Input */}
+            <View className="border-t border-gray-200 px-4 py-3 flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-full bg-gray-300 items-center justify-center">
+                {user?.photoURL ? (
+                  <Image
+                    source={{ uri: user.photoURL }}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <Text className="text-white font-bold text-xs">
+                    {user?.displayName?.charAt(0).toUpperCase() || "U"}
+                  </Text>
+                )}
+              </View>
+              <TextInput
+                value={commentText}
+                onChangeText={setCommentText}
+                placeholder="Add a comment..."
+                placeholderTextColor="#9CA3AF"
+                className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-gray-900"
+                editable={!isCommenting}
+              />
+              <TouchableOpacity
+                onPress={handleAddComment}
+                disabled={!commentText.trim() || isCommenting}
+                className={`p-2 ${!commentText.trim() ? 'opacity-50' : ''}`}
+              >
+                {isCommenting ? (
+                  <ActivityIndicator size="small" color="#000" />
+                ) : (
+                  <SendIcon size={24} color={commentText.trim() ? "#000" : "#9CA3AF"} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );

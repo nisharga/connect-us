@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { RootStackParamList } from "../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -24,7 +26,10 @@ import {
 
 export default function HomeScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<CompositeNavigationProp<
+      BottomTabNavigationProp<RootStackParamList>,
+      NativeStackNavigationProp<RootStackParamList>
+    >>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,23 +43,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={["top", "bottom"]}>
-      {/* Header */}
-      <View className="bg-white px-4 py-3 border-b border-gray-200 flex-row items-center justify-between z-10">
-        <Text className="text-2xl font-bold text-gray-900">Feed</Text>
-        <View className="flex-row items-center justify-end gap-3">
-          <TouchableOpacity
-            className="bg-black rounded-full px-4 py-2"
-            onPress={() => navigation.navigate("CreatePost")}
-            activeOpacity={0.8}
-          >
-            <Text className="text-white font-bold text-sm flex items-center">
-              +
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["bottom"]}>
       {/* Posts Feed */}
       {loading ? (
         <View className="flex-1 items-center justify-center">
@@ -90,48 +79,6 @@ export default function HomeScreen() {
           }
         />
       )}
-
-      {/* Bottom Navigation Bar */}
-      <View className="bg-white border-t border-gray-200 px-4 py-3">
-        <View className="flex-row items-center justify-around">
-          <TouchableOpacity className="items-center" activeOpacity={0.8}>
-            <View className="mb-1">
-              <HomeIcon size={24} color="#111827" />
-            </View>
-            <Text className="text-xs font-semibold text-gray-900">Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="items-center"
-            onPress={() => navigation.navigate("ChatList")}
-            activeOpacity={0.8}
-          >
-            <View className="mb-1">
-              <ChatIcon size={24} color="#6B7280" />
-            </View>
-            <Text className="text-xs text-gray-500">Chats</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="items-center"
-            onPress={() => navigation.navigate("Profile")}
-            activeOpacity={0.8}
-          >
-            <View className="mb-1">
-              <UserIcon size={24} color="#6B7280" />
-            </View>
-            <Text className="text-xs text-gray-500">Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="items-center"
-            onPress={() => navigation.navigate("Settings")}
-            activeOpacity={0.8}
-          >
-            <View className="mb-1">
-              <SettingsIcon size={24} color="#6B7280" />
-            </View>
-            <Text className="text-xs text-gray-500">Settings</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </SafeAreaView>
   );
 }

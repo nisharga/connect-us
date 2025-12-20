@@ -278,7 +278,11 @@ export const subscribeToUserChats = (
 
           if (userSnap.exists()) {
             const data = userSnap.data() as any;
-            resolvedName = data.displayName || data.userName || data.name || data.email || null;
+            // Handle empty or whitespace-only displayName
+            const displayName = data.displayName && data.displayName.trim() !== "" 
+              ? data.displayName 
+              : undefined;
+            resolvedName = displayName || data.userName || data.name || data.email || null;
             if (resolvedName) {
               chats[idx].otherUserName = resolvedName;
             }
@@ -349,14 +353,25 @@ export const getAllUsers = async (
 
   // Convert to array and filter out current user
   const users = querySnapshot.docs
-    .map((doc) => ({
-      uid: doc.id,
-      ...(doc.data() as {
+    .map((doc) => {
+      const data = doc.data() as {
         displayName?: string;
         email?: string;
         photoURL?: string;
-      }),
-    }))
+      };
+      
+      // Handle empty or whitespace-only displayName
+      const displayName = data.displayName && data.displayName.trim() !== "" 
+        ? data.displayName 
+        : undefined;
+      
+      return {
+        uid: doc.id,
+        displayName: displayName,
+        email: data.email,
+        photoURL: data.photoURL,
+      };
+    })
     .filter((user) => user.uid !== currentUserId); // Exclude current user
 
   return users;

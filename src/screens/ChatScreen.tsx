@@ -1,7 +1,7 @@
 // This screen handles the one-on-one chat interface using GiftedChat
 // It shows message history and allows sending new messages in real-time
 
-import React, { useState, useCallback, useEffect, useContext } from "react";
+import React, { useState, useCallback, useEffect, useContext, useLayoutEffect } from "react";
 import {
   View, // Container component
   Text, // Text display component
@@ -16,7 +16,7 @@ import { subscribeToMessages, sendMessage } from "../services/chatService";
 import { Message } from "../types/chat";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-import { BackArrowIcon } from "../components/Icons";// Define the props type for this screen
+// Back arrow removed; native header will be used
 type Props = NativeStackScreenProps<RootStackParamList, "Chat">;
 
 // Helper function to get a user's display name
@@ -24,7 +24,16 @@ const getUserDisplayName = (userData: {
   displayName?: string;
   email?: string;
 }): string => {
-  return userData.displayName || userData.email || "Unknown User";
+  // If displayName exists and is not empty, use it
+  if (userData.displayName && userData.displayName.trim() !== "") {
+    return userData.displayName;
+  }
+  // If email exists, use it (even if it's the only available info)
+  if (userData.email) {
+    return userData.email;
+  }
+  // Fallback to Unknown User
+  return "Unknown User";
 };
 
 const ChatScreen = ({ navigation, route }: Props) => {
@@ -89,40 +98,14 @@ const ChatScreen = ({ navigation, route }: Props) => {
     );
   }
 
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: otherUserName });
+  }, [navigation, otherUserName]);
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
       <View className="flex-1 bg-white">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Home")}
-          className="mb-2 flex-row items-center pt-12 px-4"
-        >
-          <View className="mr-2">
-            <BackArrowIcon size={20} color="#111827" />
-          </View>
-          <Text className="text-gray-900 font-bold text-base">Back to Home</Text>
-        </TouchableOpacity>
-
-        {/* Custom Header */}
-        <View className="bg-white px-4 py-3 border-b border-gray-200 flex-row items-center">
-          {/* Other user's profile picture or placeholder */}
-          <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center mr-3">
-            {otherUserPhoto ? (
-              <Image
-                source={{ uri: otherUserPhoto }}
-                className="w-10 h-10 rounded-full"
-              />
-            ) : (
-              <Text className="text-gray-900 text-lg font-bold">
-                {otherUserName.charAt(0).toUpperCase()}
-              </Text>
-            )}
-          </View>
-
-          {/* Other user's name */}
-          <Text className="text-xl font-bold text-gray-900 flex-1">
-            {otherUserName}
-          </Text>
-        </View>
+        {/* Native header used */}
 
         {/* GiftedChat Component */}
         {/* This handles all the chat UI including message bubbles, input field, and send button */}
@@ -157,14 +140,14 @@ const ChatScreen = ({ navigation, route }: Props) => {
                 {props.currentMessage && (
                   <View
                     className={`p-3 rounded-2xl mx-2 my-1 max-w-xs ${props.currentMessage.user._id === user.uid
-                        ? "bg-black self-end" // Current user's messages on right, primary black
-                        : "bg-gray-300 self-start" // Other user's messages on left, gray
+                      ? "bg-black self-end" // Current user's messages on right, primary black
+                      : "bg-gray-300 self-start" // Other user's messages on left, gray
                       }`}
                   >
                     <Text
                       className={`${props.currentMessage.user._id === user.uid
-                          ? "text-white" // White text for current user
-                          : "text-gray-800" // Dark text for other user
+                        ? "text-white" // White text for current user
+                        : "text-gray-800" // Dark text for other user
                         }`}
                     >
                       {props.currentMessage.text}

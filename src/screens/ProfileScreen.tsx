@@ -1,40 +1,22 @@
 import React, { useContext, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-  FlatList,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, FlatList, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { RootStackParamList } from "../types/navigation";
 import { AuthContext } from "../contexts/AuthContext";
 import { auth, db } from "../services/firebase";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-} from "firebase/firestore";
-import * as ImagePicker from "expo-image-picker";
-import { updateProfile } from "firebase/auth";
-import { uploadProfileImageToCloudinary } from "../services/cloudinaryService";
-import { BackArrowIcon } from "../components/Icons";
+import { doc, getDoc, collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { HomeIcon, UserIcon, SettingsIcon, ChatIcon, GalleryIcon } from "../components/Icons";
 import { Post } from "../types/post";
 import PostCard from "../components/PostCard";
+import { getUserStats } from "../services/userService";
 
-type ProfileScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Profile"
+type ProfileScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<RootStackParamList, "Profile">,
+  NativeStackNavigationProp<RootStackParamList>
 >;
 
 export default function ProfileScreen() {
@@ -43,9 +25,10 @@ export default function ProfileScreen() {
 
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [bio, setBio] = useState("");
-  const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -60,6 +43,11 @@ export default function ProfileScreen() {
         } else {
           setPhotoURL(user?.photoURL || null);
         }
+
+        // Load user stats
+        const stats = await getUserStats(user!.uid);
+        setFollowersCount(stats.followersCount);
+        setFollowingCount(stats.followingCount);
       } catch (e) {
         console.warn("Profile load failed:", e);
         setPhotoURL(user?.photoURL || null);
@@ -81,6 +69,11 @@ export default function ProfileScreen() {
       (snapshot) => {
         const userPosts = snapshot.docs.map((doc) => {
           const data = doc.data();
+          // Convert comments array
+          const comments = (data.comments || []).map((comment: any) => ({
+            ...comment,
+            createdAt: comment.createdAt?.toDate ? comment.createdAt.toDate() : new Date(comment.createdAt),
+          }));
           return {
             id: doc.id,
             userId: data.userId,
@@ -90,7 +83,7 @@ export default function ProfileScreen() {
             caption: data.caption,
             createdAt: data.createdAt.toDate(),
             likes: data.likes || [],
-            comments: data.comments || 0,
+            comments: comments,
           } as Post;
         });
         // Sort by createdAt descending
@@ -107,185 +100,146 @@ export default function ProfileScreen() {
     return () => unsubscribe();
   }, [user]);
 
-  async function pickImage() {
-    if (loading) return;
-
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Permission required", "Photo access is required.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.5,
-    });
-
-    if (result.canceled) return;
-
-    const uri = result.assets[0].uri;
-    await uploadImage(uri);
-  }
-
-  async function uploadImage(uri: string) {
-    if (!user) return;
-
-    setLoading(true);
-
-    try {
-      const imageUrl = await uploadProfileImageToCloudinary(uri);
-      setPhotoURL(imageUrl);
-
-      await updateProfile(auth.currentUser!, {
-        photoURL: imageUrl,
-      });
-
-      Alert.alert("Success", "Profile photo updated.");
-    } catch (e) {
-      Alert.alert("Upload failed", "Could not upload image.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  
 
   async function saveBio() {
     if (!user) return;
 
-    setLoading(true);
-    try {
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          bio: bio.trim(),
-          updatedAt: new Date(),
-        },
-        { merge: true }
-      );
-      Alert.alert("Saved", "Bio updated successfully.");
-    } catch (e) {
-      Alert.alert("Error", "Could not save bio.");
-    } finally {
-      setLoading(false);
-    }
+    // Saving is handled on EditProfile screen
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top", "bottom"]}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <PostCard post={item} />}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <View className="mb-6">
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Home")}
-              className="mb-6 flex-row items-center"
-            >
-              <View className="mr-2">
-                <BackArrowIcon size={20} color="#111827" />
+          <View>
+            {/* Profile Header */}
+            <View className="bg-white px-6 pb-4 pt-3">
+              {/* Profile Photo and Name */}
+              <View className="items-center mb-4">
+                {photoURL ? (
+                  <View className="relative">
+                    <Image
+                      source={{ uri: photoURL }}
+                      className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
+                    />
+                    <View className="absolute bottom-0 right-0 w-7 h-7 bg-black rounded-full items-center justify-center border-2 border-white">
+                      <Text className="text-white text-xs font-bold">✓</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View className="w-24 h-24 rounded-full bg-gray-100 border-4 border-white shadow-lg items-center justify-center">
+                    <Text className="text-gray-400 text-3xl font-bold">
+                      {user?.displayName?.charAt(0).toUpperCase() || "U"}
+                    </Text>
+                  </View>
+                )}
+
+                {user?.displayName && (
+                  <Text className="text-gray-900 font-bold text-xl mt-3">
+                    {user.displayName}
+                  </Text>
+                )}
+                {user?.email && (
+                  <Text className="text-gray-500 text-sm mt-0.5">
+                    {user.email}
+                  </Text>
+                )}
               </View>
-              <Text className="text-gray-900 font-bold text-base">
-                Back to Home
-              </Text>
-            </TouchableOpacity>
 
-            <View className="items-center mb-8">
-              {user?.displayName && (
-                <Text className="text-gray-700 mt-4 text-lg">
-                  {user.displayName}
-                </Text>
-              )}
-            </View>
-
-            <View className="items-center mb-8">
-              {photoURL ? (
-                <Image
-                  source={{ uri: photoURL }}
-                  className="w-32 h-32 rounded-full"
-                />
-              ) : (
-                <View className="w-32 h-32 rounded-full bg-gray-50 border border-gray-200 items-center justify-center">
-                  <Text className="text-gray-500 text-sm">No Photo</Text>
+              {/* Stats Row */}
+              <View className="flex-row justify-around mb-4 py-3 bg-gray-50 rounded-xl">
+                <View className="items-center">
+                  <Text className="text-gray-900 font-bold text-lg">
+                    {posts.length}
+                  </Text>
+                  <Text className="text-gray-500 text-xs mt-0.5">Posts</Text>
                 </View>
-              )}
-
-              <TouchableOpacity
-                disabled={loading}
-                onPress={pickImage}
-                className="mt-4 border border-gray-200 bg-gray-50 rounded-xl px-6 py-3"
-                activeOpacity={0.8}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#111827" />
-                ) : (
-                  <Text className="text-gray-900 font-bold text-base">
-                    Change Photo
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View className="mb-6 px-4">
-              <View className="mb-4">
-                <Text className="text-gray-700 font-semibold mb-2">Bio</Text>
-                <TextInput
-                  value={bio}
-                  onChangeText={setBio}
-                  placeholder="Tell others about yourself"
-                  placeholderTextColor="#9ca3af"
-                  multiline
-                  numberOfLines={4}
-                  className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 text-gray-900 text-base"
-                  style={{ textAlignVertical: "top", minHeight: 100 }}
-                />
+                <View className="w-px bg-gray-200" />
+                <View className="items-center">
+                  <Text className="text-gray-900 font-bold text-lg">{followersCount}</Text>
+                  <Text className="text-gray-500 text-xs mt-0.5">Followers</Text>
+                </View>
+                <View className="w-px bg-gray-200" />
+                <View className="items-center">
+                  <Text className="text-gray-900 font-bold text-lg">{followingCount}</Text>
+                  <Text className="text-gray-500 text-xs mt-0.5">Following</Text>
+                </View>
               </View>
 
+              {/* Bio Section */}
+              {bio ? (
+                <View className="mb-3">
+                  <Text className="text-gray-700 text-base leading-5">
+                    {bio}
+                  </Text>
+                </View>
+              ) : null}
+
+              {/* Edit Profile Button */}
               <TouchableOpacity
-                onPress={saveBio}
-                disabled={loading}
-                className="bg-black rounded-xl py-4 mb-4"
+                onPress={() => navigation.navigate("EditProfile")}
+                className="bg-black rounded-xl py-3"
                 activeOpacity={0.8}
               >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text className="text-white text-center font-bold text-base">
-                    Save Bio
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              <View className="border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50">
-                <Text className="text-sm text-gray-500">Account Email</Text>
-                <Text className="font-semibold text-gray-900">
-                  {user?.email}
+                <Text className="text-white font-bold text-base text-center">
+                  Edit Profile
                 </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Posts Section Header */}
+            <View className="px-4 pt-4 pb-3 bg-gray-50">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-lg font-bold text-gray-900">
+                  My Posts
+                </Text>
+                <View className="bg-gray-200 rounded-full px-2.5 py-0.5">
+                  <Text className="text-gray-700 font-semibold text-xs">
+                    {posts.length}
+                  </Text>
+                </View>
               </View>
             </View>
 
-            <View className="px-4 mt-8 mb-4">
-              <Text className="text-2xl font-bold text-gray-900">
-                Your Posts
-              </Text>
-            </View>
+            {/* Posts Grid Spacer */}
+            <View className="px-4 bg-gray-50" />
           </View>
         }
         ListEmptyComponent={
           !postsLoading ? (
-            <View className="flex-1 items-center justify-center py-20 px-4">
-              <Text className="text-gray-500 text-center text-base">
-                No posts yet. Create your first post!
-              </Text>
+            <View className="flex-1 items-center justify-center py-16 px-4 bg-gray-50">
+              <View className="bg-white rounded-2xl p-8 items-center shadow-sm">
+                <View className="mb-4">
+                  <GalleryIcon size={64} color="#9CA3AF" />
+                </View>
+                <Text className="text-gray-900 font-bold text-lg mb-2">
+                  No posts yet
+                </Text>
+                <Text className="text-gray-500 text-center mb-6">
+                  Share your first moment with the world!
+                </Text>
+                <TouchableOpacity
+                  className="bg-black rounded-xl px-8 py-3"
+                  onPress={() => navigation.navigate("CreatePost")}
+                  activeOpacity={0.8}
+                >
+                  <Text className="text-white font-bold">Create Post</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : null
         }
         ListFooterComponent={
           postsLoading ? (
-            <View className="py-8 items-center">
+            <View className="py-8 items-center bg-gray-50">
               <ActivityIndicator size="large" color="#000" />
+              <Text className="text-gray-500 mt-3">Loading posts...</Text>
             </View>
           ) : null
         }
