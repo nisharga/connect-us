@@ -193,12 +193,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <View className="items-center mb-8">
-              <Text className="text-3xl font-bold text-gray-900">
-                Your Profile
-              </Text>
-              <Text className="text-gray-500 mt-2">
-                Click on other users' names in posts to view their profiles
-              </Text>
+              {user?.displayName && (
+                <Text className="text-gray-700 mt-4 text-lg">
+                  {user.displayName}
+                </Text>
+              )}
             </View>
 
             <View className="items-center mb-8">

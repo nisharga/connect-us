@@ -20,8 +20,7 @@ import {
 import { UserChat } from "../types/chat";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-
-// Define the props type for this screen
+import { BackArrowIcon } from "../components/Icons";// Define the props type for this screen
 type Props = NativeStackScreenProps<RootStackParamList, "ChatList">;
 
 // Helper function to get a user's display name
@@ -29,7 +28,16 @@ const getUserDisplayName = (userData: {
   displayName?: string;
   email?: string;
 }): string => {
-  return userData.displayName || userData.email || "Unknown User";
+  // If displayName exists and is not empty, use it
+  if (userData.displayName && userData.displayName.trim() !== "") {
+    return userData.displayName;
+  }
+  // If email exists, use it (even if it's the only available info)
+  if (userData.email) {
+    return userData.email;
+  }
+  // Fallback to Unknown User
+  return "Unknown User";
 };
 
 const ChatListScreen = ({ navigation }: Props) => {
@@ -109,7 +117,7 @@ const ChatListScreen = ({ navigation }: Props) => {
       user.uid,
       selectedUser.uid,
       {
-        displayName: user.displayName || user.email || "Current User",
+        displayName: user.displayName || "User",
         email: user.email || "",
         photoURL: user.photoURL || "",
       },
@@ -136,14 +144,14 @@ const ChatListScreen = ({ navigation }: Props) => {
       className="flex-row items-center p-4 border-b border-gray-200 bg-white"
     >
       {/* User profile picture or placeholder */}
-      <View className="w-12 h-12 rounded-full bg-blue-500 items-center justify-center mr-3">
+      <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3">
         {item.otherUserPhoto ? (
           <Image
             source={{ uri: item.otherUserPhoto }}
             className="w-12 h-12 rounded-full"
           />
         ) : (
-          <Text className="text-white text-lg font-bold">
+          <Text className="text-gray-900 text-lg font-bold">
             {item.otherUserName.charAt(0).toUpperCase()}
           </Text>
         )}
@@ -178,14 +186,14 @@ const ChatListScreen = ({ navigation }: Props) => {
       className="flex-row items-center p-4 border-b border-gray-200 bg-white"
     >
       {/* User profile picture or placeholder */}
-      <View className="w-12 h-12 rounded-full bg-green-500 items-center justify-center mr-3">
+      <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3">
         {item.photoURL ? (
           <Image
             source={{ uri: item.photoURL }}
             className="w-12 h-12 rounded-full"
           />
         ) : (
-          <Text className="text-white text-lg font-bold">
+          <Text className="text-gray-900 text-lg font-bold">
             {getUserDisplayName(item).charAt(0).toUpperCase()}
           </Text>
         )}
@@ -223,7 +231,7 @@ const ChatListScreen = ({ navigation }: Props) => {
     return (
       <SafeAreaView className="flex-1 bg-gray-50" edges={["top", "bottom"]}>
         <View className="flex-1 justify-center items-center bg-gray-50">
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#000" />
         </View>
       </SafeAreaView>
     );
@@ -232,21 +240,31 @@ const ChatListScreen = ({ navigation }: Props) => {
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top", "bottom"]}>
       <View className="flex-1 bg-gray-50">
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Home")}
+          className="mb-2 flex-row items-center pt-12 px-4"
+        >
+          <View className="mr-2">
+            <BackArrowIcon size={20} color="#111827" />
+          </View>
+          <Text className="text-gray-900 font-bold text-base">Back to Home</Text>
+        </TouchableOpacity>
+
         {/* Header */}
-        <View className="bg-blue-500 pt-12 pb-4 px-4">
+        <View className="bg-white px-4 py-3 border-b border-gray-200">
           <View className="flex-row justify-between items-center">
-            <Text className="text-2xl font-bold text-white">Chats</Text>
+            <Text className="text-2xl font-bold text-gray-900">Chats</Text>
             <TouchableOpacity
               onPress={() => setShowUserList(!showUserList)}
-              className="bg-white rounded-full px-4 py-2"
+              className="bg-black rounded-full px-4 py-2"
+              activeOpacity={0.8}
             >
-              <Text className="text-blue-500 font-semibold">
+              <Text className="text-white font-semibold">
                 {showUserList ? "Hide Users" : "New Chat"}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Show user list or chat list based on state */}
         {showUserList ? (
           // User list for starting new chats

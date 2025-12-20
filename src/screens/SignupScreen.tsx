@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../services/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
@@ -63,6 +63,21 @@ export default function SignupScreen() {
       return;
     }
 
+    // Check if display name is already taken
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("displayName", "==", displayName.trim()));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        setDisplayNameError("This username is already taken. Please choose another one.");
+        return;
+      }
+    } catch (err) {
+      console.error("Error checking username uniqueness:", err);
+      // Continue with signup even if we can't verify uniqueness
+    }
+
     if (!email.trim()) {
       setEmailError("Email is required");
       return;
@@ -87,18 +102,23 @@ export default function SignupScreen() {
       // Create the user account with email and password
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Update the user's display name in Firebase Auth
-      await updateProfile(cred.user, { displayName });
+      // Prepare display name
+      const finalDisplayName = displayName.trim() || email.split("@")[0] || email || "User";
 
       // Save user data to Firestore 'users' collection for chat functionality
       // This allows other users to see your name when starting a chat
       await setDoc(doc(db, "users", cred.user.uid), {
-        displayName: displayName,
+        displayName: finalDisplayName,
         email: email,
-        photoURL: cred.user.photoURL || null,
+        photoURL: cred.user.photoURL || "",
         createdAt: new Date(),
       });
 
+      // Update the user's display name in Firebase Auth
+      await updateProfile(cred.user, { 
+        displayName: finalDisplayName 
+      });
+      
       // Navigation happens automatically via auth state change in App.tsx
     } catch (err: any) {
       const errorCode = err?.code || "";

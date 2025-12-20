@@ -50,6 +50,9 @@ export default function UserProfileScreen({ route }: Props) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
+  const displayName =
+    user?.displayName || user?.userName || user?.name || user?.email || posts[0]?.userName || "Unknown User";
+
   // Fetch user data
   useEffect(() => {
     async function loadUser() {
@@ -127,7 +130,7 @@ export default function UserProfileScreen({ route }: Props) {
           photoURL: currentUser.photoURL || "",
         },
         {
-          displayName: user.displayName || user.email || "Unknown User",
+          displayName: displayName,
           email: user.email || "",
           photoURL: user.photoURL || "",
         }
@@ -137,7 +140,7 @@ export default function UserProfileScreen({ route }: Props) {
       navigation.navigate("Chat", {
         chatRoomId,
         otherUserId: user.uid,
-        otherUserName: user.displayName || user.email || "Unknown User",
+        otherUserName: displayName,
         otherUserPhoto: user.photoURL,
       });
     } catch (error) {
@@ -188,7 +191,7 @@ export default function UserProfileScreen({ route }: Props) {
 
             <View className="items-center mb-8">
               <Text className="text-3xl font-bold text-gray-900 mb-6">
-                {user.displayName || user.email}
+                {displayName}
               </Text>
 
               <View className="items-center mb-6">
@@ -200,9 +203,7 @@ export default function UserProfileScreen({ route }: Props) {
                 ) : (
                   <View className="w-32 h-32 rounded-full bg-gray-50 border border-gray-200 items-center justify-center">
                     <Text className="text-gray-500 text-4xl font-bold">
-                      {(user.displayName || user.email || "U")
-                        .charAt(0)
-                        .toUpperCase()}
+                      {displayName.charAt(0).toUpperCase()}
                     </Text>
                   </View>
                 )}
@@ -218,7 +219,7 @@ export default function UserProfileScreen({ route }: Props) {
                     <ChatIcon size={20} color="#fff" />
                   </View>
                   <Text className="text-white font-bold text-base">
-                    Chat with {user.displayName || user.email}
+                    Chat with {displayName}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -232,7 +233,7 @@ export default function UserProfileScreen({ route }: Props) {
 
             <View className="px-4 mt-4 mb-4">
               <Text className="text-2xl font-bold text-gray-900">
-                {user.displayName || user.email}'s Posts
+                {displayName}'s Posts
               </Text>
             </View>
           </View>

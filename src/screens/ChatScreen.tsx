@@ -16,8 +16,7 @@ import { subscribeToMessages, sendMessage } from "../services/chatService";
 import { Message } from "../types/chat";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-
-// Define the props type for this screen
+import { BackArrowIcon } from "../components/Icons";// Define the props type for this screen
 type Props = NativeStackScreenProps<RootStackParamList, "Chat">;
 
 // Helper function to get a user's display name
@@ -93,32 +92,34 @@ const ChatScreen = ({ navigation, route }: Props) => {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
       <View className="flex-1 bg-white">
-        {/* Custom Header */}
-        <View className="bg-blue-500 pt-12 pb-4 px-4 flex-row items-center">
-          {/* Back button */}
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            className="mr-3"
-          >
-            <Text className="text-white text-lg">←</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Home")}
+          className="mb-2 flex-row items-center pt-12 px-4"
+        >
+          <View className="mr-2">
+            <BackArrowIcon size={20} color="#111827" />
+          </View>
+          <Text className="text-gray-900 font-bold text-base">Back to Home</Text>
+        </TouchableOpacity>
 
+        {/* Custom Header */}
+        <View className="bg-white px-4 py-3 border-b border-gray-200 flex-row items-center">
           {/* Other user's profile picture or placeholder */}
-          <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-3">
+          <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center mr-3">
             {otherUserPhoto ? (
               <Image
                 source={{ uri: otherUserPhoto }}
                 className="w-10 h-10 rounded-full"
               />
             ) : (
-              <Text className="text-blue-500 text-lg font-bold">
+              <Text className="text-gray-900 text-lg font-bold">
                 {otherUserName.charAt(0).toUpperCase()}
               </Text>
             )}
           </View>
 
           {/* Other user's name */}
-          <Text className="text-xl font-bold text-white flex-1">
+          <Text className="text-xl font-bold text-gray-900 flex-1">
             {otherUserName}
           </Text>
         </View>
@@ -145,7 +146,7 @@ const ChatScreen = ({ navigation, route }: Props) => {
                 }}
                 className="justify-center items-center px-4 mb-2"
               >
-                <Text className="text-blue-500 font-bold text-lg">Send</Text>
+                <Text className="text-black font-bold text-lg">Send</Text>
               </TouchableOpacity>
             );
           }}
@@ -155,18 +156,16 @@ const ChatScreen = ({ navigation, route }: Props) => {
               <View>
                 {props.currentMessage && (
                   <View
-                    className={`p-3 rounded-2xl mx-2 my-1 max-w-xs ${
-                      props.currentMessage.user._id === user.uid
-                        ? "bg-blue-500 self-end" // Current user's messages on right, blue
+                    className={`p-3 rounded-2xl mx-2 my-1 max-w-xs ${props.currentMessage.user._id === user.uid
+                        ? "bg-black self-end" // Current user's messages on right, primary black
                         : "bg-gray-300 self-start" // Other user's messages on left, gray
-                    }`}
+                      }`}
                   >
                     <Text
-                      className={`${
-                        props.currentMessage.user._id === user.uid
+                      className={`${props.currentMessage.user._id === user.uid
                           ? "text-white" // White text for current user
                           : "text-gray-800" // Dark text for other user
-                      }`}
+                        }`}
                     >
                       {props.currentMessage.text}
                     </Text>

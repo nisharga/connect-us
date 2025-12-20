@@ -29,21 +29,44 @@ import {
   orderBy, // Function to sort query results
   onSnapshot, // Function to listen to real-time updates
   getDocs, // Function to get documents once
+  getDoc,
   updateDoc, // Function to update a document
   doc, // Function to reference a specific document
   serverTimestamp, // Function to get server timestamp
   Timestamp, // Type for Firestore timestamps
 } from "firebase/firestore";
+import { limit } from "firebase/firestore";
 import { db } from "./firebase";
 import { ChatRoom, Message, UserChat } from "../types/chat";
 import { User } from "firebase/auth";
+
+// Helper to sort chats by lastMessageTime (most recent first)
+const sortChatsByTime = (chats: UserChat[]): UserChat[] => {
+  return chats.sort((a, b) => {
+    if (!a.lastMessageTime && !b.lastMessageTime) return 0;
+    if (!a.lastMessageTime) return 1;
+    if (!b.lastMessageTime) return -1;
+    const bTime = b.lastMessageTime instanceof Date ? b.lastMessageTime.getTime() : 0;
+    const aTime = a.lastMessageTime instanceof Date ? a.lastMessageTime.getTime() : 0;
+    return bTime - aTime;
+  });
+};
 
 // Helper function to get a user's display name
 const getUserDisplayName = (userData: {
   displayName?: string;
   email?: string;
 }): string => {
-  return userData.displayName || userData.email || "Unknown User";
+  // If displayName exists and is not empty, use it
+  if (userData.displayName && userData.displayName.trim() !== "") {
+    return userData.displayName;
+  }
+  // If email exists, use it (even if it's the only available info)
+  if (userData.email) {
+    return userData.email;
+  }
+  // Fallback to Unknown User
+  return "Unknown User";
 };
 
 // This function creates or gets an existing chat room between two users
@@ -234,23 +257,71 @@ export const subscribeToUserChats = (
       };
     });
 
-    // Sort chats by lastMessageTime in descending order (most recent first)
-    // This replaces the Firestore orderBy to avoid composite index requirement
-    chats = chats.sort((a, b) => {
-      // Handle cases where lastMessageTime might be undefined
-      if (!a.lastMessageTime && !b.lastMessageTime) return 0;
-      if (!a.lastMessageTime) return 1; // Put chats with no timestamp at the end
-      if (!b.lastMessageTime) return -1; // Put chats with no timestamp at the end
+    // Find chats that need enrichment (name == Unknown User)
+    const unknowns = chats
+      .map((c, idx) => ({ c, idx }))
+      .filter(({ c }) => (c.otherUserName || "") === "Unknown User" && c.otherUserId);
 
-      // Sort by timestamp descending (most recent first)
-      // Both values are guaranteed to be Date objects at this point due to checks above
-      const bTime = b.lastMessageTime instanceof Date ? b.lastMessageTime.getTime() : 0;
-      const aTime = a.lastMessageTime instanceof Date ? a.lastMessageTime.getTime() : 0;
-      return bTime - aTime;
-    });
+    if (unknowns.length === 0) {
+      // No enrichment needed — sort and return
+      chats = sortChatsByTime(chats);
+      callback(chats);
+      return;
+    }
 
-    // Call the callback with the updated and sorted chats
-    callback(chats);
+    // Fetch missing user docs in parallel and enrich chats
+    Promise.all(
+      unknowns.map(async ({ idx, c }) => {
+        try {
+          const userSnap = await getDoc(doc(db, "users", c.otherUserId));
+          let resolvedName: string | null = null;
+
+          if (userSnap.exists()) {
+            const data = userSnap.data() as any;
+            resolvedName = data.displayName || data.userName || data.name || data.email || null;
+            if (resolvedName) {
+              chats[idx].otherUserName = resolvedName;
+            }
+            if (!chats[idx].otherUserPhoto && data.photoURL) {
+              chats[idx].otherUserPhoto = data.photoURL;
+            }
+          } else {
+            console.debug("subscribeToUserChats: user doc not found for", c.otherUserId);
+          }
+
+          // If still no resolved name, try to get the author's name from their most recent post
+          if (!resolvedName) {
+            try {
+              const postsQ = query(
+                collection(db, "posts"),
+                where("userId", "==", c.otherUserId),
+                orderBy("createdAt", "desc"),
+                limit(1)
+              );
+              const postSnap = await getDocs(postsQ);
+              if (!postSnap.empty) {
+                const postData = postSnap.docs[0].data() as any;
+                const postAuthor = postData.userName || null;
+                if (postAuthor) {
+                  chats[idx].otherUserName = postAuthor;
+                }
+              }
+            } catch (e) {
+              // ignore post lookup error
+            }
+          }
+        } catch (e) {
+          console.warn("subscribeToUserChats: error fetching user", c.otherUserId, e);
+        }
+      })
+    ).then(() => {
+        chats = sortChatsByTime(chats);
+        callback(chats);
+      })
+      .catch(() => {
+        chats = sortChatsByTime(chats);
+        callback(chats);
+      });
   });
 
   // Return the unsubscribe function

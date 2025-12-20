@@ -74,14 +74,19 @@ export default function LoginScreen() {
       // This is helpful for users who signed up before the chat feature was added
       const userDocRef = doc(db, "users", cred.user.uid);
       const userDoc = await getDoc(userDocRef);
-
+      
       if (!userDoc.exists()) {
         // User data doesn't exist, create it
+        const displayName = 
+          cred.user.displayName || 
+          cred.user.email?.split("@")[0] || 
+          cred.user.email || 
+          "User";
+        
         await setDoc(userDocRef, {
-          displayName:
-            cred.user.displayName || cred.user.email?.split("@")[0] || "User",
-          email: cred.user.email,
-          photoURL: cred.user.photoURL || null,
+          displayName: displayName,
+          email: cred.user.email || "",
+          photoURL: cred.user.photoURL || "",
           createdAt: new Date(),
         });
       }
