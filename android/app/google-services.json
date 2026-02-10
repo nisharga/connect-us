@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "768443298228",
+    "firebase_url": "https://connect-us-24e0a.firebaseio.com",
+    "project_id": "connect-us-24e0a",
+    "storage_bucket": "connect-us-24e0a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768443298228:android:YOUR_APP_ID_HERE",
+        "android_client_info": {
+          "package_name": "com.connectus.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "768443298228-9sqk0sbmujl70klm709ctqrt7o4g0j64.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ4geFpnOJ34CjprDEtgeLgrmtZWCLhy8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768443298228-7o84hsnk4r96ae2sjc8bitl6vs6qvi33.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

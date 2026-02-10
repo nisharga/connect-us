@@ -24,18 +24,6 @@ jest.mock('react-native/Libraries/Utilities/PixelRatio', () => ({
 }));
 
 // Mock expo modules
-jest.mock('expo-notifications', () => ({
-  setNotificationHandler: jest.fn(),
-  getPermissionsAsync: jest.fn(),
-  requestPermissionsAsync: jest.fn(),
-  getExpoPushTokenAsync: jest.fn(),
-  setNotificationChannelAsync: jest.fn(),
-  scheduleNotificationAsync: jest.fn(),
-  addNotificationReceivedListener: jest.fn(),
-  addNotificationResponseReceivedListener: jest.fn(),
-  AndroidImportance: { MAX: 5 },
-}));
-
 jest.mock('expo-device', () => ({
   isDevice: true,
 }));

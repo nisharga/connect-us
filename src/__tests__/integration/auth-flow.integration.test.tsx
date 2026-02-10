@@ -14,14 +14,6 @@ jest.mock('../../services/firebase', () => ({
   firebaseConfig: {},
 }));
 
-// Mock notification service
-jest.mock('../../services/notificationService', () => ({
-  registerForPushNotificationsAsync: jest.fn(),
-  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
-  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
-  schedulePushNotification: jest.fn(),
-}));
-
 describe('Authentication Flow Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -82,43 +74,6 @@ describe('Authentication Flow Integration Tests', () => {
       });
 
       // Would verify main navigation is shown
-    });
-
-    it('should register for push notifications on login', async () => {
-      const mockOnAuthStateChanged = auth.onAuthStateChanged as jest.Mock;
-      const mockRegisterForPushNotifications = jest.fn();
-
-      jest.mock('../../services/notificationService', () => ({
-        registerForPushNotificationsAsync: mockRegisterForPushNotifications,
-      }));
-
-      mockOnAuthStateChanged.mockImplementation((callback) => {
-        callback(mockUser);
-        return jest.fn();
-      });
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(mockOnAuthStateChanged).toHaveBeenCalled();
-      });
-    });
-
-    it('should setup notification listeners on mount', async () => {
-      const mockOnAuthStateChanged = auth.onAuthStateChanged as jest.Mock;
-      mockOnAuthStateChanged.mockImplementation((callback) => {
-        callback(mockUser);
-        return jest.fn();
-      });
-
-      const { unmount } = render(<App />);
-
-      await waitFor(() => {
-        expect(mockOnAuthStateChanged).toHaveBeenCalled();
-      });
-
-      // Cleanup should be called on unmount
-      unmount();
     });
   });
 
@@ -238,25 +193,6 @@ describe('Authentication Flow Integration Tests', () => {
 
       expect(mockUnsubscribe).toHaveBeenCalled();
     });
-
-    it('should cleanup notification listeners on unmount', async () => {
-      const mockRemove = jest.fn();
-      const mockOnAuthStateChanged = auth.onAuthStateChanged as jest.Mock;
-      mockOnAuthStateChanged.mockImplementation((callback) => {
-        callback(null);
-        return jest.fn();
-      });
-
-      const { unmount } = render(<App />);
-
-      await waitFor(() => {
-        expect(mockOnAuthStateChanged).toHaveBeenCalled();
-      });
-
-      unmount();
-
-      // Notification listeners should be cleaned up
-    });
   });
 
   describe('Error Handling', () => {
@@ -267,33 +203,6 @@ describe('Authentication Flow Integration Tests', () => {
       });
 
       expect(() => render(<App />)).toThrow();
-    });
-
-    it('should continue functioning if notification setup fails', async () => {
-      const mockOnAuthStateChanged = auth.onAuthStateChanged as jest.Mock;
-      mockOnAuthStateChanged.mockImplementation((callback) => {
-        callback({
-          uid: 'user123',
-          email: 'test@example.com',
-        });
-        return jest.fn();
-      });
-
-      const mockRegisterForPushNotifications = jest.fn().mockRejectedValue(
-        new Error('Notification error')
-      );
-
-      jest.mock('../../services/notificationService', () => ({
-        registerForPushNotificationsAsync: mockRegisterForPushNotifications,
-      }));
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(mockOnAuthStateChanged).toHaveBeenCalled();
-      });
-
-      // App should still function even if notifications fail
     });
   });
 });

@@ -68,8 +68,3 @@ export function CommentIcon({ size = 24, color = "#000" }: IconProps) {
 export function SendIcon({ size = 24, color = "#000" }: IconProps) {
   return <Feather name="send" size={size} color={color} />;
 }
-
-// Google Icon (for Google Sign-In)
-export function GoogleIcon({ size = 24, color = "#4285F4" }: IconProps) {
-  return <AntDesign name="google" size={size} color={color} />;
-}

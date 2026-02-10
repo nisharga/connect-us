@@ -27,7 +27,6 @@ export default function SettingsScreen() {
   const { user } = useContext(AuthContext);
 
   // Settings state
-  const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [emailUpdates, setEmailUpdates] = useState(false);
 
@@ -97,18 +96,6 @@ export default function SettingsScreen() {
             <Text className="text-gray-700 font-semibold mb-3 text-lg">
               Preferences
             </Text>
-
-            <View className="flex-row justify-between items-center border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 mb-3">
-              <View>
-                <Text className="font-semibold text-gray-900">
-                  Push Notifications
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Receive app notifications
-                </Text>
-              </View>
-              <Switch value={notifications} onValueChange={setNotifications} />
-            </View>
 
             <View className="flex-row justify-between items-center border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 mb-3">
               <View>
