@@ -17,6 +17,7 @@ import UserProfileScreen from "./src/screens/UserProfileScreen";
 import CreatePostScreen from "./src/screens/CreatePostScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import TabNavigator from "./src/navigators/TabNavigator";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -43,46 +44,48 @@ export default function App() {
     <SafeAreaProvider>
       <AuthContext.Provider value={{ user }}>
         <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{ headerShown: true, headerTitleAlign: "center" }}
-          >
-            {user ? (
-              <>
-                <Stack.Screen 
-                  name="Main" 
-                  component={TabNavigator}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-                <Stack.Screen
-                  name="UserProfile"
-                  component={UserProfileScreen}
-                />
-                <Stack.Screen 
-                  name="CreatePost" 
-                  component={CreatePostScreen}
-                  options={({ navigation }) => ({
-                    title: "Create Post",
-                    headerTitleAlign: "center",
-                    headerLeft: () => (
-                      <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        className="px-4"
-                      >
-                        <Text className="text-black font-bold">Cancel</Text>
-                      </TouchableOpacity>
-                    ),
-                  })}
-                />
-                <Stack.Screen name="Chat" component={ChatScreen} />
-              </>
-            ) : (
-              <>
-                <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Signup" component={SignupScreen} />
-              </>
-            )}
-          </Stack.Navigator>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Stack.Navigator
+              screenOptions={{ headerShown: true, headerTitleAlign: "center" }}
+            >
+              {user ? (
+                <>
+                  <Stack.Screen 
+                    name="Main" 
+                    component={TabNavigator}
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+                  <Stack.Screen
+                    name="UserProfile"
+                    component={UserProfileScreen}
+                  />
+                  <Stack.Screen 
+                    name="CreatePost" 
+                    component={CreatePostScreen}
+                    options={({ navigation }) => ({
+                      title: "Create Post",
+                      headerTitleAlign: "center",
+                      headerLeft: () => (
+                        <TouchableOpacity
+                          onPress={() => navigation.goBack()}
+                          className="px-4"
+                        >
+                          <Text className="text-black font-bold">Cancel</Text>
+                        </TouchableOpacity>
+                      ),
+                    })}
+                  />
+                  <Stack.Screen name="Chat" component={ChatScreen} />
+                </>
+              ) : (
+                <>
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Signup" component={SignupScreen} />
+                </>
+              )}
+            </Stack.Navigator>
+          </GestureHandlerRootView>
         </NavigationContainer>
         <Toast />
       </AuthContext.Provider>

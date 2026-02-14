@@ -35,6 +35,9 @@ import {
 import { showErrorToast, showSuccessToast } from "../utils/toastHelper";
 import { schedulePushNotification } from "../services/notificationService";
 import { responsiveFontSize, responsiveWidth, isSmallDevice } from "../utils/responsive";
+import { useCallback, useMemo, useRef } from 'react';
+import { StyleSheet, Button } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
 interface PostCardProps {
   post: Post;
@@ -166,6 +169,16 @@ export default function PostCard({ post }: PostCardProps) {
       showErrorToast("Failed to delete comment");
     }
   };
+
+  // 1. Ref to control the sheet
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  // 2. Points where the sheet will rest (e.g., 25% height and 50% height)
+  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
+
+  // 3. Callbacks to open/close
+  const handleOpenPress = () => bottomSheetRef.current?.expand();
+  const handleClosePress = () => bottomSheetRef.current?.close();
 
   return (
     <>
