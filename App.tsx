@@ -18,13 +18,17 @@ import CreatePostScreen from "./src/screens/CreatePostScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import TabNavigator from "./src/navigators/TabNavigator";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { View, Pressable } from 'react-native';
+import PostActionsSheet from "./src/components/PostActionsSheet";
+import { Post } from "./src/types/post";
+import { subscribeToPosts } from "./src/services/postService";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
+    
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
@@ -77,6 +81,17 @@ export default function App() {
                     })}
                   />
                   <Stack.Screen name="Chat" component={ChatScreen} />
+                   
+                  <Stack.Screen
+                    name="PostActionsSheet"
+                    component={PostActionsSheet}
+                    options={{
+                      presentation: "transparentModal", // Essential for bottom sheet look
+                      headerShown: false,               // Usually hidden for sheets
+                      animation: "slide_from_bottom",   // Classic sheet animation
+                      contentStyle: { backgroundColor: 'transparent' } // Allows backdrop
+                    }}
+                  />
                 </>
               ) : (
                 <>
@@ -92,3 +107,5 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+
