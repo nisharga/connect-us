@@ -549,9 +549,7 @@ export default function PostCard({ post }: PostCardProps) {
             </View>
           </View>
         </KeyboardAvoidingView>
-      </Modal>  
-
-     
+      </Modal>   
     </>
   );
 }

@@ -22,6 +22,11 @@ export function SettingsIcon({ size = 24, color = "#000" }: IconProps) {
   return <MaterialCommunityIcons name="cog" size={size} color={color} />;
 }
 
+// Settings/Gear Icon
+export function TrendingIcon({ size = 24, color = "#000" }: IconProps) {
+  return <MaterialCommunityIcons name="trending-up" size={size} color={color} />;
+}
+
 // Camera Icon
 export function CameraIcon({ size = 24, color = "#999" }: IconProps) {
   return <Feather name="camera" size={size} color={color} />;

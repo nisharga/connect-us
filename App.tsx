@@ -22,6 +22,7 @@ import { View, Pressable } from 'react-native';
 import PostActionsSheet from "./src/components/PostActionsSheet";
 import { Post } from "./src/types/post";
 import { subscribeToPosts } from "./src/services/postService";
+import TrendingScreen from "./src/screens/TrendingScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -81,7 +82,11 @@ export default function App() {
                     })}
                   />
                   <Stack.Screen name="Chat" component={ChatScreen} />
-                   
+                   <Stack.Screen
+                    name="Trending"
+                    component={TrendingScreen}
+                  />
+
                   <Stack.Screen
                     name="PostActionsSheet"
                     component={PostActionsSheet}

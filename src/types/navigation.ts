@@ -19,6 +19,7 @@ export type RootStackParamList = {
     post: Post;
   };
   ChatList: undefined; // ChatList screen doesn't need any params
+  Trending: undefined; // ChatList screen doesn't need any params
   Chat: {
     // Chat screen needs these parameters:
     chatRoomId: string; // The ID of the chat room
