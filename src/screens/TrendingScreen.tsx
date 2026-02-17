@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, FlatList, Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import { Animated, FlatList, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HeartIconBlank, HeartIconFull } from "../components/Icons";
- 
+import { FlyIcon, HeartIconBlank, HeartIconFull, MessageIcon } from "../components/Icons";
+import { BlurView } from 'expo-blur';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const CARD_DATA = [
   {
     id: '1',
@@ -47,10 +49,72 @@ const CARD_DATA = [
     isPremium: true
   },
 ];
+
+const TRENDING_CARD_DATA = [
+  {
+    id: '1',
+    name: "Work Essentials",
+    bg: "https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_work_essentials-2.jpeg?tr=cm-pad_resize,v-3,w-3840",
+    avatar: "https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg",
+    views: "20.5K",
+    isPremium: true,
+    storage_key: "@trending_card_1"
+  },
+  {
+    id: '2',
+    name: "Bags & Wallets",
+    bg: "https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_bags_wallets-2.jpeg?tr=cm-pad_resize,v-3,w-3840",
+    avatar: "https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg",
+    views: "15.2K",
+    isPremium: false,
+    storage_key: "@trending_card_2"
+  },
+  {
+    id: '3',
+    name: "Tech Accessories",
+    bg: "https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3,w-3840",
+    avatar: "https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg",
+    views: "32.1K",
+    isPremium: true,
+    storage_key: "@trending_card_3"
+  },
+  {
+    id: '4',
+    name: "Office Setup",
+    bg: "https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_work_essentials-2.jpeg?tr=cm-pad_resize,v-3,w-3840",
+    avatar: "https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg",
+    views: "10.5K",
+    isPremium: false,
+    storage_key: "@trending_card_4"
+  },
+  {
+    id: '5',
+    name: "Travel Gear",
+    bg: "https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_bags_wallets-2.jpeg?tr=cm-pad_resize,v-3,w-3840",
+    avatar: "https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg",
+    views: "8.9K",
+    isPremium: true,
+    storage_key: "@trending_card_5"
+  },
+  {
+    id: '6',
+    name: "Gadget Zone",
+    bg: "https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3,w-3840",
+    avatar: "https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg",
+    views: "45K",
+    isPremium: true,
+    storage_key: "@trending_card_6"
+  },
+];
+
 export default function TrendingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
-     <View>
+     <ScrollView 
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
         <SectionTitle title="Stories" />
         <View className="pl-4 mb-4">
           <FlatList
@@ -58,9 +122,9 @@ export default function TrendingScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingHorizontal: 0, gap: 8}} // Gap creates space between cards
+            contentContainerStyle={{ paddingHorizontal: 0, gap: 8}}  
             renderItem={({ item }) => (
-              <View> {/* Fixed width for consistent horizontal scrolling */}
+              <View>  
                 <CardBox 
                   isPremium={item.isPremium} 
                   avatarUrl="https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg" 
@@ -73,18 +137,35 @@ export default function TrendingScreen() {
           />
         </View>
 
-        {/* trending */}
+        
         <SectionTitle title="Trending" />
-        <View className="px-4">
-          <TrendingCard 
-            isPremium={true} 
-            avatarUrl="https://sm.ign.com/t/ign_ap/cover/a/avatar-gen/avatar-generations_hugw.1200.jpg" 
-            name={"NK"} 
-            bgImage={'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3,w-3840'} 
-            viewCount={'11k'} 
+        <View className="px-4 mb-4">
+          <FlatList
+            data={TRENDING_CARD_DATA}
+            keyExtractor={(item) => item?.id}
+            contentContainerStyle={{ paddingHorizontal: 0, gap: 8 }}
+            scrollEnabled={false}
+            renderItem={({item}) => {
+              return (
+                <View>
+                  <TrendingCard 
+                    avatarUrl={item.avatar} 
+                    name={item.name} 
+                    bgImage={'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3,w-3840'}  
+                    stroage_key="one"
+                  />
+                </View>
+              )
+            }}  
+            ListEmptyComponent={() => (
+              <View>
+                <Text>No trending stories</Text>
+              </View>
+            )}
+            showsVerticalScrollIndicator={false}
           />
         </View>
-     </View>
+     </ScrollView>
     </SafeAreaView>
   );
 }
@@ -191,7 +272,7 @@ const CardBox = ({ isPremium, bgImage, avatarUrl, name, viewCount }: { isPremium
 };
 
 // trending card
-const TrendingCard = ({ isPremium, bgImage, avatarUrl, name, viewCount }: { isPremium: boolean, avatarUrl: string, name: string; bgImage: string; viewCount: string }) => {
+const TrendingCard = ({ bgImage, avatarUrl, name, stroage_key }: any) => {
   return (
     <View>
       
@@ -210,11 +291,38 @@ const TrendingCard = ({ isPremium, bgImage, avatarUrl, name, viewCount }: { isPr
           </View>
           
          
-          <View className="flex flex-row items-center gap-2">
-            <View className={`rounded-[20px] ${isPremium ? 'bg-yellow-500' : 'bg-black'}`}>
-              <Text className="text-white font-medium px-2 py-1 text-[11px]">{isPremium ? 'Premium' : 'Live'}</Text>
-            </View>
-            <Text className="text-white font-medium text-[12px]">{viewCount}</Text>
+          <View className="flex flex-row items-center gap-4">
+            <LikeButton stroage_key={stroage_key} />
+
+            <TouchableOpacity 
+              onPress={() => console.log('hi')}
+              activeOpacity={0.8}
+              className="rounded-full overflow-hidden" // overflow-hidden is key for rounded blur
+            >
+            <BlurView 
+              intensity={30} // Adjust blur strength (0-100)
+              tint="dark"   // 'light', 'dark', or 'default'
+              className="flex-row items-center px-3 py-1"
+            >
+              <MessageIcon size={16} color="white" />
+              <Text className="text-white font-medium ml-1 text-[14px]">120K</Text>
+            </BlurView>
+            </TouchableOpacity>
+
+             <TouchableOpacity 
+              onPress={() => console.log('hi')}
+              activeOpacity={0.8}
+              className="rounded-full overflow-hidden" // overflow-hidden is key for rounded blur
+            >
+            <BlurView 
+              intensity={30} // Adjust blur strength (0-100)
+              tint="dark"   // 'light', 'dark', or 'default'
+              className="flex-row items-center px-3 py-1"
+            >
+              <FlyIcon size={16} color="white" />
+              <Text className="text-white font-medium ml-1 text-[14px]">120K</Text>
+            </BlurView>
+            </TouchableOpacity>
           </View>
 
           
@@ -229,3 +337,58 @@ const TrendingCard = ({ isPremium, bgImage, avatarUrl, name, viewCount }: { isPr
     </View>
   );
 };
+
+
+
+
+const LikeButton = ({stroage_key}: {stroage_key: string}) => {
+  const [count, setCount] = useState(1);
+  const STORAGE_KEY = stroage_key;
+
+  // 1. Load data from Storage when app starts
+  useEffect(() => {
+    const loadCount = async () => {
+      try {
+        const savedCount = await AsyncStorage.getItem(STORAGE_KEY);
+        if (savedCount !== null) {
+          setCount(parseInt(savedCount));
+        }
+      } catch (e) {
+        console.error("Failed to load count", e);
+      }
+    };
+    loadCount();
+  }, []);
+
+  // 2. Handle Press: Update State + Save to Storage
+  const handlePress = async () => {
+    try {
+      const newCount = count + 1;
+      setCount(newCount);
+      await AsyncStorage.setItem(STORAGE_KEY, newCount.toString());
+    } catch (e) {
+      console.error("Failed to save count", e);
+    }
+  };
+
+  return (
+    <TouchableOpacity 
+      onPress={handlePress}
+      activeOpacity={0.8}
+      className="rounded-full overflow-hidden"
+    >
+      <BlurView 
+        intensity={30} 
+        tint="dark"
+        className="flex-row items-center px-3 py-1"
+      >
+        {
+          count > 1 ? <HeartIconFull size={16} color="white" /> : <HeartIconBlank size={16} color="white" />
+        }
+        <Text className="text-white font-medium ml-1 text-[14px]">
+          {count}K
+        </Text>
+      </BlurView>
+    </TouchableOpacity>
+  );
+}
