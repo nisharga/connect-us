@@ -7,8 +7,7 @@ interface IconProps {
   color?: string;
   strokeWidth?: number;
 }
-
-// Home Icon
+ 
 export function HomeIcon({ size = 24, color = "#000" }: IconProps) {
   return <MaterialCommunityIcons name="home" size={size} color={color} />;
 }
